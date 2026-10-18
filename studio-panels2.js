@@ -1,0 +1,641 @@
+function StylePanel({
+  s
+}) {
+  const K = window.KStudio,
+    {
+      cfg
+    } = s;
+  const isCustom = cfg.theme === 'custom';
+  const setC = x => s.upd({
+    custom: {
+      ...cfg.custom,
+      ...x
+    }
+  });
+  return React.createElement("div", {
+    className: "st-col"
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Apar\xEAncia"), React.createElement("p", {
+    className: "st-lead"
+  }, "Escolha um tema pronto ou use as cores da sua marca."), React.createElement("div", {
+    className: "st-sec"
+  }, "Tema"), React.createElement(SSeg, {
+    options: [['ready', 'Prontos'], ['custom', 'Cores da marca']],
+    value: isCustom ? 'custom' : 'ready',
+    onChange: v => s.upd({
+      theme: v === 'custom' ? 'custom' : cfg.lastTheme || 'brasa'
+    })
+  }), React.createElement("div", {
+    style: {
+      height: 12
+    }
+  }), !isCustom ? React.createElement("div", {
+    className: "st-themes"
+  }, K.THEMES.map(t => React.createElement("button", {
+    key: t.id,
+    className: 'st-theme' + (cfg.theme === t.id ? ' on' : ''),
+    style: {
+      background: t.bg,
+      color: t.ink
+    },
+    onClick: () => s.upd({
+      theme: t.id,
+      lastTheme: t.id,
+      custom: {
+        bg: t.bg,
+        ink: t.ink,
+        btn: t.btn.startsWith('#') ? t.btn : t.bg,
+        btnInk: t.btnInk,
+        accent: t.accent
+      }
+    })
+  }, React.createElement("i", {
+    style: {
+      background: t.accent,
+      boxShadow: `0 0 0 4px ${t.btn}`
+    }
+  }), t.name))) : React.createElement("div", {
+    className: "st-colors"
+  }, [['bg', 'Fundo'], ['accent', 'Destaque'], ['btn', 'Botões'], ['btnInk', 'Texto dos botões'], ['ink', 'Texto']].map(([k, l]) => React.createElement("label", {
+    key: k,
+    className: "st-color"
+  }, React.createElement("input", {
+    type: "color",
+    value: cfg.custom[k],
+    onChange: e => setC({
+      [k]: e.target.value
+    })
+  }), l))), React.createElement("div", {
+    className: "st-sec"
+  }, "Fonte do nome e dos bot\xF5es"), React.createElement("div", {
+    className: "st-fonts"
+  }, K.FONTS.map(f => React.createElement("button", {
+    key: f.id,
+    className: 'st-font' + (cfg.font === f.id ? ' on' : ''),
+    onClick: () => s.upd({
+      font: f.id
+    })
+  }, React.createElement("b", {
+    style: {
+      fontFamily: f.css
+    }
+  }, "Aa"), React.createElement("span", null, f.id)))), React.createElement("div", {
+    className: "st-sec"
+  }, "Formato dos bot\xF5es"), React.createElement("div", {
+    className: "st-shapes"
+  }, [['square', 'Reto', 3], ['soft', 'Arredondado', 8], ['pill', 'Pílula', 20]].map(([v, l, r]) => React.createElement("button", {
+    key: v,
+    className: 'st-shape' + (cfg.buttonShape === v ? ' on' : ''),
+    onClick: () => s.upd({
+      buttonShape: v
+    })
+  }, React.createElement("span", null, React.createElement("i", {
+    style: {
+      borderRadius: r
+    }
+  }), l)))), React.createElement("div", {
+    className: "st-sec"
+  }, "Estilo dos bot\xF5es"), React.createElement(SSeg, {
+    options: [['fill', 'Preenchido'], ['outline', 'Contorno'], ['shadow', 'Sombra dura']],
+    value: cfg.buttonStyle,
+    onChange: v => s.upd({
+      buttonStyle: v
+    })
+  }));
+}
+const fmtN = n => n >= 10000 ? (n / 1000).toFixed(0) + 'K' : n >= 1000 ? (n / 1000).toFixed(1).replace('.', ',') + 'K' : String(n);
+function DataPanel({
+  s
+}) {
+  const K = window.KStudio;
+  const [days, setDays] = React.useState(30);
+  const [st, setSt] = React.useState(null);
+  const [demo, setDemo] = React.useState(false);
+  const [tick, setTick] = React.useState(0);
+  React.useEffect(() => {
+    let on = true;
+    setSt(null);
+    K.fetchStats(s.cfg, days).then(x => on && setSt(x)).catch(e => on && setSt({
+      error: e.message,
+      views: 0
+    }));
+    return () => {
+      on = false;
+    };
+  }, [days, s.cfg.slug, tick]);
+  const view = demo ? K.demoStats(s.cfg, days) : st;
+  const srcLabel = st?.source === 'supabase' ? 'Dados reais da sua página publicada' : 'Modo demonstração: conta só as visitas feitas neste navegador';
+  const head = React.createElement(React.Fragment, null, React.createElement("h1", {
+    className: "st-h1"
+  }, "Dados ", demo ? React.createElement("span", {
+    className: "st-demo"
+  }, "Exemplo") : null), React.createElement("p", {
+    className: "st-lead"
+  }, demo ? 'Números fictícios, só para você ver como o painel fica com movimento.' : srcLabel + '. Cada pessoa conta 1 visita por sessão — recarregar a página não infla o número.'), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement(SSeg, {
+    options: [[7, '7 dias'], [30, '30 dias'], [90, s.limits.days.includes(90) ? '90 dias' : '90 dias · Pro']],
+    value: days,
+    onChange: v => s.limits.days.includes(v) ? setDays(v) : s.toast('Histórico de 90 dias é do plano Pro.')
+  })), React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => setTick(t => t + 1)
+  }, "Atualizar")));
+  if (!view) return React.createElement("div", {
+    className: "st-col"
+  }, head, React.createElement("p", {
+    className: "st-lead",
+    style: {
+      marginTop: 20
+    }
+  }, "Carregando\u2026"));
+  if (view.error && !demo) return React.createElement("div", {
+    className: "st-col"
+  }, head, React.createElement("div", {
+    className: "st-err",
+    style: {
+      marginTop: 16
+    }
+  }, "N\xE3o foi poss\xEDvel buscar os dados: ", view.error));
+  if (!view.views && !view.clicks) return React.createElement("div", {
+    className: "st-col"
+  }, head, React.createElement("div", {
+    className: "st-card",
+    style: {
+      marginTop: 18,
+      fontSize: 14,
+      lineHeight: 1.6
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 16
+    }
+  }, "Nenhuma visita nos \xFAltimos ", days, " dias."), React.createElement("p", {
+    style: {
+      color: 'var(--s-mut)',
+      margin: '6px 0 14px'
+    }
+  }, "Os n\xFAmeros come\xE7am a aparecer quando algu\xE9m abre sua p\xE1gina pelo link. Para testar agora: abra sua p\xE1gina, toque em alguns bot\xF5es e volte aqui."), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("a", {
+    className: "st-btn sm pri",
+    style: {
+      textDecoration: 'none'
+    },
+    href: s.publicUrl,
+    target: "_blank",
+    rel: "noopener"
+  }, "Abrir minha p\xE1gina"), React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => setDemo(true)
+  }, "Ver exemplo com movimento"))));
+  const maxD = Math.max(...view.daily.map(d => d.views), 1);
+  const maxT = Math.max(...view.topList.map(t => t.n), 1);
+  const hours = Array.from({
+    length: 14
+  }, (_, i) => i + 10);
+  const maxH = Math.max(...view.heat.flatMap(r => hours.map(h => r[h])), 1);
+  const top = view.topList[0],
+    src = view.srcList[0];
+  const ins = [];
+  if (view.views < 30) ins.push('Ainda são poucas visitas para tirar conclusões. Com 30+ visitas os padrões ficam confiáveis.');else {
+    if (view.peak) ins.push(`Seu pico é ${K.WEEK[view.peak.dow].toLowerCase()} por volta das ${view.peak.hour}h. Poste stories com “link na bio” uma hora antes.`);
+    if (src) ins.push(`${Math.round(src.n / view.views * 100)}% das visitas vêm de ${src.label}.${src.label === 'Direto' ? ' Use os links por canal (aba Compartilhar) para saber a origem real.' : ''}`);
+    if (top && view.clicks) ins.push(`“${top.label}” recebe ${Math.round(top.n / view.clicks * 100)}% dos cliques. Mantenha ele em primeiro.`);
+    if (view.ctr < 40) ins.push('Menos de 40% das visitas clicam em algo. Teste uma oferta com foto logo abaixo do botão de pedido.');
+  }
+  return React.createElement("div", {
+    className: "st-col",
+    style: {
+      maxWidth: 640
+    }
+  }, head, demo ? React.createElement("button", {
+    className: "st-btn sm",
+    style: {
+      marginTop: 10
+    },
+    onClick: () => setDemo(false)
+  }, "\u2190 Voltar aos dados reais") : null, React.createElement("div", {
+    className: "st-kpis",
+    style: {
+      marginTop: 18
+    }
+  }, React.createElement("div", {
+    className: "st-kpi"
+  }, React.createElement("span", null, "Visitas"), React.createElement("b", null, fmtN(view.views)), React.createElement("small", null, view.views / days < 1 ? 'menos de 1 por dia' : (view.views / days).toFixed(view.views / days < 10 ? 1 : 0).replace('.', ',') + ' por dia')), React.createElement("div", {
+    className: "st-kpi"
+  }, React.createElement("span", null, "Cliques"), React.createElement("b", null, fmtN(view.clicks)), React.createElement("small", null, "em bot\xF5es")), React.createElement("div", {
+    className: "st-kpi"
+  }, React.createElement("span", null, "Taxa de clique"), React.createElement("b", null, view.ctr, "%"), React.createElement("small", null, "visitas que clicaram")), React.createElement("div", {
+    className: "st-kpi"
+  }, React.createElement("span", null, "Celular"), React.createElement("b", null, view.mobilePct, "%"), React.createElement("small", null, "das visitas"))), ins.length ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-sec"
+  }, "O que fazer com isso"), React.createElement("div", {
+    className: "st-ins"
+  }, ins.map((t, i) => React.createElement("div", {
+    key: i,
+    className: "st-in-row"
+  }, React.createElement(SI, {
+    n: "star",
+    size: 18
+  }), React.createElement("span", null, t))))) : null, React.createElement("div", {
+    className: "st-sec"
+  }, "Visitas e cliques por dia"), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("div", {
+    className: "st-bars"
+  }, view.daily.map(d => React.createElement("div", {
+    key: d.date,
+    "data-t": `${d.date.slice(8)}/${d.date.slice(5, 7)} · ${d.views} visitas · ${d.clicks} cliques`
+  }, React.createElement("i", {
+    style: {
+      height: Math.max(0, d.views - Math.min(d.clicks, d.views)) / maxD * 100 + '%'
+    }
+  }), React.createElement("em", {
+    style: {
+      height: Math.min(d.clicks, d.views) / maxD * 100 + '%'
+    }
+  })))), React.createElement("div", {
+    className: "st-legend"
+  }, React.createElement("span", null, React.createElement("i", {
+    style: {
+      background: 'var(--s-or)'
+    }
+  }), "Cliques"), React.createElement("span", null, React.createElement("i", {
+    style: {
+      background: '#3a3a40'
+    }
+  }), "Visitas"))), view.topList.length ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-sec"
+  }, "Mais clicados"), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("div", {
+    className: "st-top"
+  }, view.topList.slice(0, 10).map((t, i) => React.createElement("div", {
+    key: t.label + i,
+    className: "st-topr"
+  }, React.createElement("span", null, i + 1, "."), React.createElement("b", {
+    style: {
+      fontWeight: 700,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      opacity: t.gone ? .55 : 1
+    }
+  }, t.label, t.gone ? ' (removido)' : ''), React.createElement("b", null, t.n), React.createElement("div", {
+    className: "bar"
+  }, React.createElement("i", {
+    style: {
+      width: t.n / maxT * 100 + '%'
+    }
+  }))))))) : null, React.createElement("div", {
+    className: "st-sec"
+  }, "De onde vieram"), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("div", {
+    className: "st-top"
+  }, view.srcList.map(t => React.createElement("div", {
+    key: t.label,
+    className: "st-topr"
+  }, React.createElement("span", null), React.createElement("b", {
+    style: {
+      fontWeight: 700
+    }
+  }, t.label), React.createElement("span", null, t.n, " \xB7 ", Math.round(t.n / Math.max(view.views, 1) * 100), "%"), React.createElement("div", {
+    className: "bar"
+  }, React.createElement("i", {
+    style: {
+      width: t.n / Math.max(view.views, 1) * 100 + '%',
+      background: '#f5b301'
+    }
+  }))))), React.createElement("small", {
+    style: {
+      display: 'block',
+      marginTop: 14,
+      color: 'var(--s-mut)',
+      fontSize: 12
+    }
+  }, "\u201CDireto\u201D = link sem marca\xE7\xE3o de canal. Use os links da aba ", React.createElement("b", null, "Compartilhar"), ".")), React.createElement("div", {
+    className: "st-sec"
+  }, "Hor\xE1rios de mais visita"), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("div", {
+    className: "st-heat"
+  }, React.createElement("span", null), hours.map(h => React.createElement("span", {
+    key: h,
+    style: {
+      textAlign: 'center'
+    }
+  }, h % 2 === 0 ? h : '')), K.WEEK_S.map((d, i) => React.createElement(React.Fragment, {
+    key: d
+  }, React.createElement("span", null, d), hours.map(h => React.createElement("i", {
+    key: h,
+    title: `${d} ${h}h · ${view.heat[i][h]} visitas`,
+    style: {
+      opacity: .06 + view.heat[i][h] / maxH * .94
+    }
+  })))))));
+}
+function SharePanel({
+  s
+}) {
+  const url = s.shareUrl;
+  const [copied, setCopied] = React.useState('');
+  const copy = (txt, k) => {
+    navigator.clipboard?.writeText(txt);
+    setCopied(k);
+    s.updP('meta', {
+      shared: true
+    });
+    setTimeout(() => setCopied(''), 1500);
+  };
+  const chans = [['ig', 'Bio do Instagram', 'instagram', '#e1306c'], ['wa', 'Status e grupos do WhatsApp', 'whatsapp', '#22c55e'], ['google', 'Perfil no Google', 'star', '#f5b301'], ['qr', 'QR Code da mesa / embalagem', 'tag', '#64748b']];
+  const withSrc = k => url + (url.includes('?') ? '&' : '?') + 'src=' + k;
+  return React.createElement("div", {
+    className: "st-col"
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Compartilhar"), React.createElement("p", {
+    className: "st-lead"
+  }, "Este \xE9 o endere\xE7o da sua p\xE1gina. Coloque na bio do Instagram \u2014 \xE9 dali que vem a maior parte dos pedidos."), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("div", {
+    className: "st-qr"
+  }, React.createElement("img", {
+    alt: "QR Code da p\xE1gina",
+    src: 'https://api.qrserver.com/v1/create-qr-code/?size=264x264&margin=0&data=' + encodeURIComponent(withSrc('qr'))
+  }), React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8,
+      minWidth: 0,
+      flex: 1
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 15
+    }
+  }, "Seu link"), React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: 'var(--s-mut)',
+      wordBreak: 'break-all'
+    }
+  }, url), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      marginTop: 4
+    }
+  }, React.createElement("button", {
+    className: "st-btn sm pri",
+    onClick: () => copy(withSrc('ig'), 'main')
+  }, copied === 'main' ? 'Copiado!' : 'Copiar link'), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: s.publicUrl,
+    target: "_blank",
+    rel: "noopener"
+  }, "Abrir"), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: 'https://wa.me/?text=' + encodeURIComponent('Peça pelo nosso link: ' + withSrc('wa')),
+    target: "_blank",
+    rel: "noopener",
+    onClick: () => s.updP('meta', {
+      shared: true
+    })
+  }, "Enviar no WhatsApp"), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: 'https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&format=png&data=' + encodeURIComponent(withSrc('qr')),
+    target: "_blank",
+    rel: "noopener"
+  }, "Baixar QR"))))), React.createElement("div", {
+    className: "st-sec"
+  }, "Um link para cada canal"), React.createElement("p", {
+    className: "st-lead",
+    style: {
+      marginTop: -4
+    }
+  }, "\xC9 o mesmo endere\xE7o com ", React.createElement("b", null, "?src="), " no final. O cliente cai na mesma p\xE1gina, mas a aba ", React.createElement("b", null, "Dados"), " sabe se ele veio do Instagram, do WhatsApp, do Google ou do QR da mesa. Use cada um no seu lugar."), React.createElement("div", {
+    className: "st-list"
+  }, chans.map(([k, l, ic, c]) => React.createElement(SRow, {
+    key: k,
+    icon: ic,
+    color: c,
+    title: l,
+    sub: withSrc(k).replace(/^https?:\/\//, ''),
+    onClick: () => copy(withSrc(k), k),
+    right: React.createElement("span", {
+      className: "st-btn sm"
+    }, copied === k ? 'Copiado!' : 'Copiar')
+  }))), React.createElement("div", {
+    className: "st-sec"
+  }, "Como colocar na bio do Instagram"), React.createElement("div", {
+    className: "st-card",
+    style: {
+      fontSize: 14,
+      lineHeight: 1.6
+    }
+  }, React.createElement("ol", {
+    style: {
+      margin: 0,
+      paddingLeft: 18
+    }
+  }, React.createElement("li", null, "Copie o link \u201CBio do Instagram\u201D acima."), React.createElement("li", null, "No Instagram: ", React.createElement("b", null, "Editar perfil \u2192 Links \u2192 Adicionar link externo"), "."), React.createElement("li", null, "Cole, coloque o t\xEDtulo \u201CPe\xE7a aqui\u201D e salve."), React.createElement("li", null, "Nos stories, use o adesivo ", React.createElement("b", null, "Link"), " com o mesmo endere\xE7o."))));
+}
+function SettingsPanel({
+  s
+}) {
+  const {
+    cfg
+  } = s;
+  const pro = s.plan === 'pro';
+  return React.createElement("div", {
+    className: "st-col"
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Configura\xE7\xF5es"), React.createElement("p", {
+    className: "st-lead"
+  }, "Plano, endere\xE7o da p\xE1gina e Google."), React.createElement("div", {
+    className: "st-sec"
+  }, "Plano"), React.createElement("div", {
+    className: "st-card",
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 14,
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 200
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 16
+    }
+  }, "KLINKS ", pro ? 'Pro' : 'Grátis'), " ", React.createElement("span", {
+    className: 'st-lock' + (pro ? ' st-pro' : '')
+  }, pro ? 'Ativo' : 'Atual'), React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: 'var(--s-mut)',
+      marginTop: 4,
+      lineHeight: 1.45
+    }
+  }, pro ? 'Sem marca KLINKS, ofertas ilimitadas, 90 dias de dados e Pixel da Meta.' : 'Pro: sem a marca “Feito com KLINKS”, ofertas ilimitadas, 90 dias de dados e Pixel da Meta — R$ 29/mês.')), s.mode === 'local' ? React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => s.setPlan(pro ? 'free' : 'pro')
+  }, pro ? 'Simular Grátis' : 'Simular Pro') : !pro && (window.KLINKS_UPGRADE_URL || window.KLINKS_SALES_WHATSAPP) ? React.createElement("a", {
+    className: "st-btn sm pri",
+    style: {
+      textDecoration: 'none'
+    },
+    href: window.KLINKS_UPGRADE_URL || 'https://wa.me/' + window.KLINKS_SALES_WHATSAPP + '?text=' + encodeURIComponent('Quero assinar o KLINKS Pro para ' + s.prettyUrl),
+    target: "_blank",
+    rel: "noopener"
+  }, "Assinar Pro") : null), React.createElement("div", {
+    className: "st-card",
+    style: {
+      padding: '4px 16px',
+      marginTop: 10
+    }
+  }, React.createElement("div", {
+    className: "st-tgrow"
+  }, React.createElement("div", null, React.createElement("b", null, "Mostrar \u201CFeito com KLINKS\u201D"), React.createElement("span", null, pro ? 'Você pode esconder no plano Pro.' : 'Para esconder, assine o Pro.')), React.createElement(SToggle, {
+    on: !pro || cfg.watermark,
+    disabled: !pro,
+    onChange: v => s.upd({
+      watermark: v
+    })
+  }))), React.createElement("div", {
+    className: "st-sec"
+  }, "Endere\xE7o da p\xE1gina"), React.createElement("div", {
+    className: "st-card",
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 15,
+      wordBreak: 'break-all'
+    }
+  }, s.prettyUrl), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: 'var(--s-mut)',
+      marginTop: 3
+    }
+  }, "Definido no cadastro. Para trocar, fale com o suporte.")), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: s.publicUrl,
+    target: "_blank",
+    rel: "noopener"
+  }, "Abrir")), React.createElement("div", {
+    className: "st-sec"
+  }, "Google e an\xFAncios"), React.createElement(SField, {
+    label: "T\xEDtulo no Google",
+    hint: "Aparece na aba do navegador e na busca."
+  }, React.createElement(SInput, {
+    value: cfg.seo?.title,
+    onChange: v => s.upd({
+      seo: {
+        ...cfg.seo,
+        title: v
+      }
+    }),
+    placeholder: cfg.profile.name + ' · Delivery e cardápio'
+  })), React.createElement(SField, {
+    label: "Descri\xE7\xE3o no Google"
+  }, React.createElement(SText, {
+    value: cfg.seo?.description,
+    onChange: v => s.upd({
+      seo: {
+        ...cfg.seo,
+        description: v
+      }
+    }),
+    style: {
+      minHeight: 70
+    },
+    placeholder: cfg.profile.tagline
+  })), React.createElement(SField, {
+    label: React.createElement(React.Fragment, null, "Pixel da Meta ", pro ? null : React.createElement("span", {
+      className: "st-lock"
+    }, "Pro")),
+    hint: "ID num\xE9rico do Pixel. Permite criar p\xFAblicos de quem visitou a p\xE1gina."
+  }, React.createElement(SInput, {
+    value: cfg.pixel,
+    disabled: !pro,
+    onChange: v => s.upd({
+      pixel: v.replace(/\D/g, '')
+    }),
+    placeholder: "123456789012345"
+  })), React.createElement("div", {
+    className: "st-sec"
+  }, "Conta"), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], {
+        type: 'application/json'
+      }));
+      a.download = `klinks-${cfg.slug}.json`;
+      a.click();
+    }
+  }, "Baixar backup"), React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => {
+      if (confirm('Descartar tudo o que ainda não foi publicado?')) s.discard();
+    }
+  }, "Descartar altera\xE7\xF5es"), React.createElement("button", {
+    className: "st-btn sm danger",
+    onClick: s.signOut
+  }, "Sair")));
+}
+Object.assign(window, {
+  StylePanel,
+  DataPanel,
+  SharePanel,
+  SettingsPanel
+});

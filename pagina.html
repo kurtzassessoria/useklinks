@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>KLINKS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@400;600;700&family=Lato:wght@400;700&family=Playfair+Display:wght@500;700&family=DM+Serif+Display&family=Cinzel:wght@500;700&family=Bebas+Neue&family=Anton&family=Oswald:wght@400;600&family=Alegreya:wght@500;700&family=Roboto+Slab:wght@500;700&family=Comfortaa:wght@500;700&family=Space+Mono:wght@400;700&family=Caveat:wght@600&family=Archivo+Black&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="bio-page.css" />
+<style>html,body{margin:0;min-height:100%}body{background:#111}a{color:inherit}a:hover{opacity:.9}#root{min-height:100vh}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png"><link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png"><link rel="apple-touch-icon" href="/apple-touch-icon-180.png"></head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="klinks-backend.js"></script>
+<script src="analytics.js"></script>
+<script src="studio-data.js"></script>
+<script src="bio-page.js"></script>
+<script>function NotFound({
+  slug
+}) {
+  return React.createElement("div", {
+    style: {
+      minHeight: '100vh',
+      display: 'grid',
+      placeItems: 'center',
+      padding: 24,
+      background: '#0d0d0e',
+      color: '#f4f2ef',
+      fontFamily: 'Manrope,sans-serif',
+      textAlign: 'center'
+    }
+  }, React.createElement("div", {
+    style: {
+      maxWidth: 360
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      margin: '0 auto 18px',
+      background: 'url(kurtz-icon.png) center/cover'
+    }
+  }), React.createElement("h1", {
+    style: {
+      fontSize: 22,
+      margin: '0 0 8px'
+    }
+  }, slug ? 'Página não encontrada' : 'KLINKS'), React.createElement("p", {
+    style: {
+      color: '#9b9893',
+      fontSize: 14,
+      lineHeight: 1.5,
+      margin: '0 0 20px'
+    }
+  }, slug ? React.createElement(React.Fragment, null, "Ainda n\xE3o existe uma p\xE1gina em ", React.createElement("b", {
+    style: {
+      color: '#f4f2ef'
+    }
+  }, window.KlinksBackend.prettyUrl(slug)), ".") : 'A página do seu restaurante em 2 minutos.'), React.createElement("a", {
+    href: "studio.html?cadastro=1",
+    style: {
+      display: 'inline-flex',
+      height: 46,
+      alignItems: 'center',
+      padding: '0 20px',
+      borderRadius: 12,
+      background: '#ff4f12',
+      color: '#fff',
+      fontWeight: 700,
+      textDecoration: 'none'
+    }
+  }, "Criar minha p\xE1gina gr\xE1tis")));
+}
+(async () => {
+  const B = window.KlinksBackend,
+    K = window.KStudio;
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  const slug = B.slugFromUrl();
+  let row = null;
+  try {
+    await B.init();
+    if (slug) row = await B.engine.loadPublic(slug);
+  } catch (e) {
+    console.warn('[KLINKS] página:', e.message);
+  }
+  if (!row) {
+    document.title = 'KLINKS';
+    root.render(React.createElement(NotFound, {
+      slug: slug
+    }));
+    return;
+  }
+  const cfg = {
+    ...K.DEFAULT,
+    ...(K.migrateLegacy(row.config) || {}),
+    slug: row.slug,
+    plan: row.plan || 'free'
+  };
+  window.__klinksSlug = row.slug;
+  window.__klinksPublic = true;
+  document.title = cfg.seo && cfg.seo.title || cfg.profile.name;
+  const t = K.resolveTheme(cfg);
+  document.body.style.background = t.bg;
+  const m = document.createElement('meta');
+  m.name = 'theme-color';
+  m.content = t.bg;
+  document.head.appendChild(m);
+  if (cfg.seo && cfg.seo.description) {
+    const d = document.createElement('meta');
+    d.name = 'description';
+    d.content = cfg.seo.description;
+    document.head.appendChild(d);
+  }
+  if (cfg.plan === 'pro' && cfg.pixel) {
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+      n = f.fbq = function () {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if (!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = !0;
+      n.version = '2.0';
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = !0;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', cfg.pixel);
+    fbq('track', 'PageView');
+  }
+  window.KlinksAnalytics && window.KlinksAnalytics.track('view', {
+    label: 'Visita'
+  });
+  root.render(React.createElement(BioPage, {
+    cfg: cfg
+  }));
+})();</script>
+</body>
+</html>

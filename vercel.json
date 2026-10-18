@@ -1,0 +1,18 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/cadastro",
+      "destination": "/studio"
+    },
+    {
+      "source": "/entrar",
+      "destination": "/studio"
+    },
+    {
+      "source": "/:slug([a-z0-9][a-z0-9-]{1,38}[a-z0-9])",
+      "destination": "/pagina"
+    }
+  ]
+}
