@@ -200,7 +200,7 @@ button{font-family:inherit;color:inherit}
 .st-auth-links button{border:0;background:none;color:var(--s-mut);font-size:13px;font-weight:700;cursor:pointer;padding:6px 0}
 .st-auth-links button:hover{color:var(--s-ink)}
 .st-stepper{display:flex;gap:8px;margin-bottom:18px}
-.st-stepper>span{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:6px 10px;border-radius:999px;background:var(--s-row);color:var(--s-mut)}
+.st-stepper>span{display:inline-block;white-space:nowrap;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:6px 10px;border-radius:999px;background:var(--s-row);color:var(--s-mut)}
 .st-stepper>span.on{background:var(--s-or);color:#fff}
 @media (max-width:860px){.st-auth{grid-template-columns:minmax(0,1fr)}.st-auth-r{display:none}.st-auth-l{padding:18px}}
 [data-ui="light"]{--s-bg:#f3f1ec;--s-pan:#ffffff;--s-row:#ffffff;--s-row-h:#f6f4ef;--s-line:#e3dfd7;--s-ink:#191817;--s-mut:#6c6862;--s-dim:#a19d96;--s-or:#f04a0c;--s-or-2:#ff6a2b}

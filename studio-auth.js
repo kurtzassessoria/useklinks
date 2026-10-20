@@ -255,7 +255,7 @@ function AuthScreen({
     className: "st-h1"
   }, step === 1 ? 'Crie a página do seu restaurante' : 'Quase lá'), React.createElement("p", {
     className: "st-lead"
-  }, step === 1 ? 'Grátis, em 2 minutos. Um link para a bio do Instagram com delivery, WhatsApp, ofertas e mapa.' : 'Com essa conta você entra para editar sua página de qualquer celular.'), err ? React.createElement("div", {
+  }, step === 1 ? 'Pronta em 2 minutos. Um link para a bio do Instagram com delivery, WhatsApp, ofertas e mapa.' : 'Com essa conta você entra para editar sua página de qualquer celular.'), err ? React.createElement("div", {
     className: "st-err"
   }, err) : null, step === 1 ? React.createElement(React.Fragment, null, React.createElement(SField, {
     label: "Nome do restaurante"
@@ -428,6 +428,61 @@ function CreatePage({
     onClick: onSignOut
   }, "Sair"))));
 }
+function NewPasswordScreen({
+  onDone
+}) {
+  const B = window.KlinksBackend;
+  const [pw, setPw] = React.useState(''),
+    [pw2, setPw2] = React.useState('');
+  const [busy, setBusy] = React.useState(false),
+    [err, setErr] = React.useState('');
+  const go = async e => {
+    e.preventDefault();
+    setErr('');
+    if (pw.length < 6) return setErr('A senha precisa ter pelo menos 6 caracteres.');
+    if (pw !== pw2) return setErr('As duas senhas não são iguais.');
+    setBusy(true);
+    try {
+      await B.engine.updatePassword(pw);
+      onDone();
+    } catch (x) {
+      setErr(x.message);
+    }
+    setBusy(false);
+  };
+  return React.createElement(AuthShell, null, React.createElement("form", {
+    onSubmit: go
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Crie sua nova senha"), React.createElement("p", {
+    className: "st-lead",
+    style: {
+      marginBottom: 20
+    }
+  }, "Escolha uma senha que voc\xEA n\xE3o usa em outros sites."), err ? React.createElement("div", {
+    className: "st-err"
+  }, err) : null, React.createElement(SField, {
+    label: "Nova senha",
+    hint: "M\xEDnimo de 6 caracteres."
+  }, React.createElement(SInput, {
+    type: "password",
+    value: pw,
+    onChange: setPw,
+    required: true,
+    autoComplete: "new-password"
+  })), React.createElement(SField, {
+    label: "Repita a nova senha"
+  }, React.createElement(SInput, {
+    type: "password",
+    value: pw2,
+    onChange: setPw2,
+    required: true,
+    autoComplete: "new-password"
+  })), React.createElement("button", {
+    className: "st-btn pri full",
+    disabled: busy
+  }, busy ? 'Salvando…' : 'Salvar e entrar')));
+}
 function useUiTheme() {
   const [ui, setUi] = React.useState(() => localStorage.getItem('klinks_ui') || 'dark');
   React.useEffect(() => {
@@ -491,6 +546,7 @@ function UiToggle({
 Object.assign(window, {
   AuthScreen,
   CreatePage,
+  NewPasswordScreen,
   UiToggle,
   useUiTheme
 });

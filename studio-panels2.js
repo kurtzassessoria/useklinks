@@ -143,7 +143,7 @@ function DataPanel({
       flex: 1
     }
   }, React.createElement(SSeg, {
-    options: [[7, '7 dias'], [30, '30 dias'], [90, s.limits.days.includes(90) ? '90 dias' : '90 dias · Pro']],
+    options: [[7, '7 dias'], [30, '30 dias'], [90, '90 dias']],
     value: days,
     onChange: v => s.limits.days.includes(v) ? setDays(v) : s.toast('Histórico de 90 dias é do plano Pro.')
   })), React.createElement("button", {
@@ -472,67 +472,13 @@ function SettingsPanel({
   const {
     cfg
   } = s;
-  const pro = s.plan === 'pro';
   return React.createElement("div", {
     className: "st-col"
   }, React.createElement("h1", {
     className: "st-h1"
   }, "Configura\xE7\xF5es"), React.createElement("p", {
     className: "st-lead"
-  }, "Plano, endere\xE7o da p\xE1gina e Google."), React.createElement("div", {
-    className: "st-sec"
-  }, "Plano"), React.createElement("div", {
-    className: "st-card",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: 14,
-      flexWrap: 'wrap'
-    }
-  }, React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 200
-    }
-  }, React.createElement("b", {
-    style: {
-      fontSize: 16
-    }
-  }, "KLINKS ", pro ? 'Pro' : 'Grátis'), " ", React.createElement("span", {
-    className: 'st-lock' + (pro ? ' st-pro' : '')
-  }, pro ? 'Ativo' : 'Atual'), React.createElement("div", {
-    style: {
-      fontSize: 12.5,
-      color: 'var(--s-mut)',
-      marginTop: 4,
-      lineHeight: 1.45
-    }
-  }, pro ? 'Sem marca KLINKS, ofertas ilimitadas, 90 dias de dados e Pixel da Meta.' : 'Pro: sem a marca “Feito com KLINKS”, ofertas ilimitadas, 90 dias de dados e Pixel da Meta — R$ 29/mês.')), s.mode === 'local' ? React.createElement("button", {
-    className: "st-btn sm",
-    onClick: () => s.setPlan(pro ? 'free' : 'pro')
-  }, pro ? 'Simular Grátis' : 'Simular Pro') : !pro && (window.KLINKS_UPGRADE_URL || window.KLINKS_SALES_WHATSAPP) ? React.createElement("a", {
-    className: "st-btn sm pri",
-    style: {
-      textDecoration: 'none'
-    },
-    href: window.KLINKS_UPGRADE_URL || 'https://wa.me/' + window.KLINKS_SALES_WHATSAPP + '?text=' + encodeURIComponent('Quero assinar o KLINKS Pro para ' + s.prettyUrl),
-    target: "_blank",
-    rel: "noopener"
-  }, "Assinar Pro") : null), React.createElement("div", {
-    className: "st-card",
-    style: {
-      padding: '4px 16px',
-      marginTop: 10
-    }
-  }, React.createElement("div", {
-    className: "st-tgrow"
-  }, React.createElement("div", null, React.createElement("b", null, "Mostrar \u201CFeito com KLINKS\u201D"), React.createElement("span", null, pro ? 'Você pode esconder no plano Pro.' : 'Para esconder, assine o Pro.')), React.createElement(SToggle, {
-    on: !pro || cfg.watermark,
-    disabled: !pro,
-    onChange: v => s.upd({
-      watermark: v
-    })
-  }))), React.createElement("div", {
+  }, "Endere\xE7o da p\xE1gina, Google e an\xFAncios."), React.createElement("div", {
     className: "st-sec"
   }, "Endere\xE7o da p\xE1gina"), React.createElement("div", {
     className: "st-card",
@@ -566,6 +512,19 @@ function SettingsPanel({
     target: "_blank",
     rel: "noopener"
   }, "Abrir")), React.createElement("div", {
+    className: "st-card",
+    style: {
+      padding: '4px 16px',
+      marginTop: 10
+    }
+  }, React.createElement("div", {
+    className: "st-tgrow"
+  }, React.createElement("div", null, React.createElement("b", null, "Mostrar \u201CFeito com KLINKS\u201D"), React.createElement("span", null, "Selo discreto no rodap\xE9 da p\xE1gina.")), React.createElement(SToggle, {
+    on: cfg.watermark !== false,
+    onChange: v => s.upd({
+      watermark: v
+    })
+  }))), React.createElement("div", {
     className: "st-sec"
   }, "Google e an\xFAncios"), React.createElement(SField, {
     label: "T\xEDtulo no Google",
@@ -594,20 +553,17 @@ function SettingsPanel({
     },
     placeholder: cfg.profile.tagline
   })), React.createElement(SField, {
-    label: React.createElement(React.Fragment, null, "Pixel da Meta ", pro ? null : React.createElement("span", {
-      className: "st-lock"
-    }, "Pro")),
+    label: "Pixel da Meta",
     hint: "ID num\xE9rico do Pixel. Permite criar p\xFAblicos de quem visitou a p\xE1gina."
   }, React.createElement(SInput, {
     value: cfg.pixel,
-    disabled: !pro,
     onChange: v => s.upd({
       pixel: v.replace(/\D/g, '')
     }),
     placeholder: "123456789012345"
   })), React.createElement("div", {
     className: "st-sec"
-  }, "Conta"), React.createElement("div", {
+  }, "Dados da p\xE1gina"), React.createElement("div", {
     style: {
       display: 'flex',
       gap: 8,
@@ -628,14 +584,194 @@ function SettingsPanel({
     onClick: () => {
       if (confirm('Descartar tudo o que ainda não foi publicado?')) s.discard();
     }
-  }, "Descartar altera\xE7\xF5es"), React.createElement("button", {
-    className: "st-btn sm danger",
+  }, "Descartar altera\xE7\xF5es")));
+}
+function AccountPanel({
+  s
+}) {
+  const B = window.KlinksBackend;
+  const [pw, setPw] = React.useState(''),
+    [pw2, setPw2] = React.useState('');
+  const [mail, setMail] = React.useState('');
+  const [busy, setBusy] = React.useState(''),
+    [msg, setMsg] = React.useState(null);
+  const email = s.user?.email || '';
+  const created = s.user?.created_at ? new Date(s.user.created_at).toLocaleDateString('pt-BR') : null;
+  const wa = window.KLINKS_SALES_WHATSAPP;
+  const run = async (key, fn) => {
+    setBusy(key);
+    setMsg(null);
+    try {
+      await fn();
+    } catch (e) {
+      setMsg({
+        err: true,
+        t: e.message
+      });
+    }
+    setBusy('');
+  };
+  const savePw = e => {
+    e.preventDefault();
+    if (pw.length < 6) return setMsg({
+      err: true,
+      t: 'A senha precisa ter pelo menos 6 caracteres.'
+    });
+    if (pw !== pw2) return setMsg({
+      err: true,
+      t: 'As duas senhas não são iguais.'
+    });
+    run('pw', async () => {
+      await B.engine.updatePassword(pw);
+      setPw('');
+      setPw2('');
+      setMsg({
+        t: 'Senha alterada. Use a nova senha no próximo login.'
+      });
+    });
+  };
+  const saveMail = e => {
+    e.preventDefault();
+    const m = mail.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(m)) return setMsg({
+      err: true,
+      t: 'Digite um e-mail válido.'
+    });
+    if (m === email) return setMsg({
+      err: true,
+      t: 'Esse já é o seu e-mail.'
+    });
+    run('mail', async () => {
+      const r = await B.engine.updateEmail(m);
+      setMail('');
+      if (r.needsConfirm) setMsg({
+        t: 'Enviamos um link de confirmação para ' + m + '. A troca só vale depois que você clicar nele.'
+      });else {
+        s.setUser({
+          ...s.user,
+          email: m
+        });
+        setMsg({
+          t: 'E-mail alterado.'
+        });
+      }
+    });
+  };
+  return React.createElement("div", {
+    className: "st-col"
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Minha conta"), React.createElement("p", {
+    className: "st-lead"
+  }, "Seus dados de acesso ao KLINKS."), msg ? React.createElement("div", {
+    className: msg.err ? 'st-err' : 'st-ok',
+    style: {
+      marginTop: 16
+    }
+  }, msg.t) : null, React.createElement("div", {
+    className: "st-sec"
+  }, "Acesso"), React.createElement("div", {
+    className: "st-card",
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 15,
+      wordBreak: 'break-all'
+    }
+  }, email), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: 'var(--s-mut)',
+      marginTop: 3
+    }
+  }, "E-mail de login", created ? ' · conta criada em ' + created : '')), React.createElement("span", {
+    className: "st-lock st-pro"
+  }, "Ativa")), React.createElement("div", {
+    className: "st-sec"
+  }, "Mudar senha"), React.createElement("form", {
+    onSubmit: savePw
+  }, React.createElement("div", {
+    className: "st-two"
+  }, React.createElement(SField, {
+    label: "Nova senha",
+    hint: "M\xEDnimo de 6 caracteres."
+  }, React.createElement(SInput, {
+    type: "password",
+    value: pw,
+    onChange: setPw,
+    autoComplete: "new-password"
+  })), React.createElement(SField, {
+    label: "Repita a nova senha"
+  }, React.createElement(SInput, {
+    type: "password",
+    value: pw2,
+    onChange: setPw2,
+    autoComplete: "new-password"
+  }))), React.createElement("button", {
+    className: "st-btn sm pri",
+    disabled: busy === 'pw' || !pw
+  }, busy === 'pw' ? 'Salvando…' : 'Salvar nova senha')), React.createElement("div", {
+    className: "st-sec"
+  }, "Mudar e-mail de login"), React.createElement("form", {
+    onSubmit: saveMail
+  }, React.createElement(SField, {
+    label: "Novo e-mail",
+    hint: "Voc\xEA recebe um link no novo e-mail para confirmar a troca."
+  }, React.createElement(SInput, {
+    type: "email",
+    value: mail,
+    onChange: setMail,
+    autoComplete: "email",
+    placeholder: "novo@email.com"
+  })), React.createElement("button", {
+    className: "st-btn sm",
+    disabled: busy === 'mail' || !mail
+  }, busy === 'mail' ? 'Enviando…' : 'Trocar e-mail')), React.createElement("div", {
+    className: "st-sec"
+  }, "Seguran\xE7a"), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("button", {
+    className: "st-btn sm",
     onClick: s.signOut
-  }, "Sair")));
+  }, "Sair deste aparelho"), React.createElement("button", {
+    className: "st-btn sm danger",
+    onClick: () => {
+      if (confirm('Sair da conta em todos os celulares e computadores?')) run('all', async () => {
+        await B.engine.signOutAll();
+        s.signOut();
+      });
+    }
+  }, "Sair de todos os aparelhos")), wa ? React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-sec"
+  }, "Ajuda"), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none',
+      alignSelf: 'flex-start'
+    },
+    href: 'https://wa.me/' + wa + '?text=' + encodeURIComponent('Olá! Preciso de ajuda com o KLINKS (' + s.prettyUrl + ').'),
+    target: "_blank",
+    rel: "noopener"
+  }, "Falar com o suporte no WhatsApp")) : null);
 }
 Object.assign(window, {
   StylePanel,
   DataPanel,
   SharePanel,
-  SettingsPanel
+  SettingsPanel,
+  AccountPanel
 });

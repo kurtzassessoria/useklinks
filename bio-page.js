@@ -292,7 +292,7 @@ function BioPage({
     className: "bp-blocks"
   }, blocks.length ? blocks.map(render) : React.createElement("div", {
     className: "bp-empty"
-  }, "Nenhum bloco vis\xEDvel ainda.")), cfg.plan !== 'pro' || cfg.watermark ? React.createElement("a", {
+  }, "Nenhum bloco vis\xEDvel ainda.")), cfg.watermark !== false ? React.createElement("a", {
     className: "bp-mark",
     href: "https://useklinks.com",
     target: "_blank",

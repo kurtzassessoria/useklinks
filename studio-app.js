@@ -65,6 +65,10 @@ function Studio() {
         return;
       }
       setUser(u);
+      if (/[?&]reset=1/.test(location.search) || /type=recovery/.test(location.hash)) {
+        setPhase('newpw');
+        return;
+      }
       const r = await B.engine.myRestaurant();
       if (!r) {
         setPhase('create');
@@ -78,7 +82,7 @@ function Studio() {
       delete live.plan;
       setRest({
         slug: r.slug,
-        plan: r.plan || 'free'
+        plan: 'pro'
       });
       setPub(JSON.stringify(live));
       setCfg(lsGet('klinks_draft_' + r.slug) || live);
@@ -128,6 +132,12 @@ function Studio() {
       onAuthed: boot
     });
   }
+  if (phase === 'newpw') return React.createElement(NewPasswordScreen, {
+    onDone: () => {
+      history.replaceState(null, '', '/');
+      boot();
+    }
+  });
   if (phase === 'create') return React.createElement(CreatePage, {
     user: user,
     onCreated: boot,
@@ -136,6 +146,8 @@ function Studio() {
   return React.createElement(Editor, {
     B: B,
     K: K,
+    user: user,
+    setUser: setUser,
     rest: rest,
     setRest: setRest,
     cfg: cfg,
@@ -148,6 +160,8 @@ function Studio() {
 function Editor({
   B,
   K,
+  user,
+  setUser,
   rest,
   setRest,
   cfg,
@@ -188,8 +202,8 @@ function Editor({
     window.addEventListener('beforeunload', h);
     return () => window.removeEventListener('beforeunload', h);
   }, [cfg, pub]);
-  const plan = rest.plan,
-    limits = K.PLAN_LIMITS[plan] || K.PLAN_LIMITS.free;
+  const plan = 'pro',
+    limits = K.PLAN_LIMITS.pro;
   const full = {
     ...cfg,
     plan
@@ -201,6 +215,8 @@ function Editor({
     plan,
     limits,
     toast: setToast,
+    user,
+    setUser,
     publicUrl: B.liveUrl(rest.slug),
     shareUrl: B.shareUrl(rest.slug),
     prettyUrl: B.prettyUrl(rest.slug),
@@ -226,7 +242,7 @@ function Editor({
       if (type === 'offer') {
         const act = cfg.blocks.filter(b => b.type === 'offer' && b.on && K.offerState(b).active).length;
         if (act >= limits.offers) {
-          setToast(`No plano Free é ${limits.offers} oferta ativa por vez. Desligue a atual ou assine o Pro.`);
+          setToast('Limite de ofertas ativas atingido.');
           return null;
         }
       }
@@ -336,6 +352,8 @@ function Editor({
     s: s
   });else if (nav.panel === 'settings') panel = React.createElement(SettingsPanel, {
     s: s
+  });else if (nav.panel === 'account') panel = React.createElement(AccountPanel, {
+    s: s
   });else panel = React.createElement(PagePanel, {
     s: s
   });
@@ -366,6 +384,28 @@ function Editor({
   }), React.createElement(UiToggle, {
     rail: true
   }), React.createElement("button", {
+    className: 'st-rb' + (nav.panel === 'account' ? ' on' : ''),
+    onClick: () => s.go({
+      panel: 'account'
+    }),
+    "aria-label": "Minha conta"
+  }, React.createElement("svg", {
+    width: "22",
+    height: "22",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }, React.createElement("circle", {
+    cx: "12",
+    cy: "8",
+    r: "4"
+  }), React.createElement("path", {
+    d: "M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"
+  })), React.createElement("span", {
+    className: "tip"
+  }, "Minha conta")), React.createElement("button", {
     className: 'st-rb' + (nav.panel === 'settings' ? ' on' : ''),
     onClick: () => s.go({
       panel: 'settings'

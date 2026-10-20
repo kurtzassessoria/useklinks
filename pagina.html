@@ -100,7 +100,7 @@
     ...K.DEFAULT,
     ...(K.migrateLegacy(row.config) || {}),
     slug: row.slug,
-    plan: row.plan || 'free'
+    plan: 'pro'
   };
   window.__klinksSlug = row.slug;
   window.__klinksPublic = true;
@@ -117,7 +117,7 @@
     d.content = cfg.seo.description;
     document.head.appendChild(d);
   }
-  if (cfg.plan === 'pro' && cfg.pixel) {
+  if (cfg.pixel) {
     !function (f, b, e, v, n, t, s) {
       if (f.fbq) return;
       n = f.fbq = function () {

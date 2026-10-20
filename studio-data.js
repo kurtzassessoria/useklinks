@@ -65,7 +65,7 @@ function newBlock(type, preset) {
 }
 
 const DEFAULT = {
-  v:3, slug:'pinerolo', plan:'free', watermark:true,
+  v:3, slug:'pinerolo', plan:'pro', watermark:true,
   profile:{name:'Pinerolo Pizzaria',tagline:'Massa de longa fermentação · Delivery e salão em Penha-SC',logo:'',logoLetter:'P',cover:'',coverY:50},
   social:{instagram:'pinerolo',facebook:'',tiktok:'',whatsapp:'5547992000820'},
   theme:'brasa', custom:{bg:'#17110f',ink:'#fff4ea',btn:'#261b17',btnInk:'#fff4ea',accent:'#ff5a1f'},
@@ -263,7 +263,7 @@ function buildConfig({name, slug, segment, whatsapp}) {
   const seg = SEGMENTS.find(s => s.id === segment) || SEGMENTS[0];
   const wa = String(whatsapp||'').replace(/\D/g,'');
   const cfg = JSON.parse(JSON.stringify(DEFAULT));
-  Object.assign(cfg, {slug, plan:'free', theme:seg.theme, lastTheme:seg.theme, font:seg.font, segment:seg.id});
+  Object.assign(cfg, {slug, plan:'pro', theme:seg.theme, lastTheme:seg.theme, font:seg.font, segment:seg.id});
   const t = THEMES.find(x => x.id === seg.theme); cfg.custom = {bg:t.bg,ink:t.ink,btn:t.btn.startsWith('#')?t.btn:t.bg,btnInk:t.btnInk,accent:t.accent};
   cfg.profile = {name, tagline:'', logo:'', logoLetter:(name||'K').trim()[0].toUpperCase(), cover:'', coverY:50};
   cfg.social = {instagram:'', facebook:'', tiktok:'', whatsapp: wa ? (wa.length <= 11 ? '55' + wa : wa) : ''};
@@ -276,7 +276,9 @@ function buildConfig({name, slug, segment, whatsapp}) {
   cfg.meta = {shared:false, onboardingHidden:false};
   return cfg;
 }
-const PLAN_LIMITS = {free:{offers:1, days:[7,30]}, pro:{offers:99, days:[7,30,90]}};
+// Venda única: todos os clientes têm tudo liberado.
+const ALL = {offers:99, days:[7,30,90]};
+const PLAN_LIMITS = {free:ALL, pro:ALL};
 
 window.KStudio = {THEMES,FONTS,FONTS_URL,LINK_PRESETS,BLOCK_TYPES,OFFER_TEMPLATES,WEEK,WEEK_S,DEFAULT,
   uid,newBlock,migrateLegacy,href,waLink,mapsLink,mapsEmbed,linkHref,socialLinks,resolveTheme,fontCss,presetFor,

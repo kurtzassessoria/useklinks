@@ -16,6 +16,8 @@
 
   function traduz(msg) {
     const m = String(msg || '').toLowerCase();
+    if (m.includes('should be different')) return 'A nova senha precisa ser diferente da atual.';
+    if (m.includes('reauthentication') || m.includes('session missing') || m.includes('jwt')) return 'Sua sessão expirou. Entre de novo e tente outra vez.';
     if (m.includes('invalid login')) return 'E-mail ou senha incorretos.';
     if (m.includes('already registered') || m.includes('already been registered')) return 'Esse e-mail já tem conta. Use “Entrar”.';
     if (m.includes('slug_taken')) return 'Esse endereço acabou de ser usado. Escolha outro.';
@@ -45,7 +47,10 @@
       },
       async signIn(email, pw) { const { data, error } = await timeout(c.auth.signInWithPassword({ email, password: pw }), T); if (error) throw new Error(traduz(error.message)); return data.user; },
       async signOut() { await c.auth.signOut(); },
-      async resetPassword(email) { const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/entrar' }); if (error) throw new Error(traduz(error.message)); },
+      async updatePassword(pw) { const { error } = await timeout(c.auth.updateUser({ password: pw }), T); if (error) throw new Error(traduz(error.message)); },
+      async updateEmail(email) { const { error } = await timeout(c.auth.updateUser({ email }, { emailRedirectTo: location.origin + '/entrar' }), T); if (error) throw new Error(traduz(error.message)); return { needsConfirm: true }; },
+      async signOutAll() { await c.auth.signOut({ scope: 'global' }); },
+      async resetPassword(email) { const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/entrar?reset=1' }); if (error) throw new Error(traduz(error.message)); },
       async slugAvailable(s) { if (!validSlug(s)) return false; return !!(await run(c.rpc('slug_available', { p_slug: s }))); },
       async myRestaurant() {
         try { await run(c.rpc('claim_invited')); } catch (e) { console.warn('[KLINKS] claim_invited', e.message); }
@@ -95,6 +100,9 @@
       },
       async signOut() { const d = db(); d.session = null; save(d); },
       async resetPassword() { await wait(); },
+      async updatePassword(pw) { await wait(); const d = db(); if (d.users[d.session]) { d.users[d.session].pw = pw; save(d); } },
+      async updateEmail(email) { await wait(); email = email.toLowerCase(); const d = db(); if (d.users[email]) throw new Error(traduz('already registered')); d.users[email] = d.users[d.session]; delete d.users[d.session]; d.session = email; save(d); return { needsConfirm: false }; },
+      async signOutAll() { const d = db(); d.session = null; save(d); },
       async slugAvailable(s) { await wait(150); return validSlug(s) && !db().restaurants[s]; },
       async myRestaurant() { const d = db(); const u = d.session && d.users[d.session]; if (!u) return null; const r = Object.entries(d.restaurants).find(([, v]) => v.owner === u.id); return r ? { slug: r[0], plan: r[1].plan, config: r[1].config } : null; },
       async createRestaurant(slug, config) {
