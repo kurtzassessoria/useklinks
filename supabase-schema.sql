@@ -37,7 +37,7 @@ create or replace function public.klinks_protect_columns() returns trigger
 language plpgsql as $$
 begin
   if coalesce(current_setting('request.jwt.claims', true)::json->>'role','') <> 'service_role'
-     and current_user not in ('postgres','supabase_admin') then
+     and current_user not in ('postgres','supabase_admin','supabase_auth_admin') then
     new.plan := old.plan; new.plan_until := old.plan_until; new.slug := old.slug;
     new.owner_email := old.owner_email;
     if old.owner_id is not null then new.owner_id := old.owner_id; end if;
@@ -217,6 +217,16 @@ begin
   update restaurants set owner_email = nullif(lower(trim(p_email)),'') where slug = p_slug and owner_id is null;
 end $$;
 grant execute on function public.admin_set_email(text, text) to authenticated;
+
+create or replace function public.admin_delete_restaurant(p_slug text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  delete from shortcut_clicks where restaurant_slug = p_slug;
+  delete from leads where restaurant_slug = p_slug;
+  delete from restaurants where slug = p_slug;
+end $$;
+grant execute on function public.admin_delete_restaurant(text) to authenticated;
 
 -- ADM também lê dados e contatos e envia fotos de qualquer cliente.
 drop policy if exists "adm le eventos" on public.shortcut_clicks;

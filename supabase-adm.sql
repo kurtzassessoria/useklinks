@@ -55,6 +55,16 @@ begin
 end $$;
 grant execute on function public.admin_set_email(text, text) to authenticated;
 
+create or replace function public.admin_delete_restaurant(p_slug text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_admin() then raise exception 'not_admin'; end if;
+  delete from shortcut_clicks where restaurant_slug = p_slug;
+  delete from leads where restaurant_slug = p_slug;
+  delete from restaurants where slug = p_slug;
+end $$;
+grant execute on function public.admin_delete_restaurant(text) to authenticated;
+
 -- ADM também lê dados e contatos e envia fotos de qualquer cliente.
 drop policy if exists "adm le eventos" on public.shortcut_clicks;
 create policy "adm le eventos" on public.shortcut_clicks for select to authenticated using (public.is_admin());

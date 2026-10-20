@@ -120,7 +120,22 @@ function AdminHome({
   }, "Plaquinha"), !r.claimed ? React.createElement("button", {
     className: "st-btn sm",
     onClick: () => copy(r)
-  }, copied === r.slug ? 'Copiado!' : 'Msg. 1º acesso') : null, !r.claimed ? React.createElement("button", {
+  }, copied === r.slug ? 'Copiado!' : 'Msg. 1º acesso') : null, React.createElement("button", {
+    className: "st-btn sm danger",
+    title: "Excluir p\xE1gina",
+    onClick: async () => {
+      const v = prompt('Excluir a página "' + (r.name || r.slug) + '" com todas as visitas, cliques e contatos? Não dá para desfazer.\n\nPara confirmar, digite o endereço: ' + r.slug);
+      if (v == null) return;
+      if (v.trim().toLowerCase() !== r.slug) return alert('Endereço diferente. Nada foi excluído.');
+      try {
+        await B.engine.adminDelete(r.slug);
+        localStorage.removeItem('klinks_draft_' + r.slug);
+        load();
+      } catch (x) {
+        alert(x.message);
+      }
+    }
+  }, "Excluir"), !r.claimed ? React.createElement("button", {
     className: "st-btn sm",
     onClick: async () => {
       const e = prompt('E-mail do dono (é com ele que o cliente faz o primeiro acesso):', r.owner_email || '');
