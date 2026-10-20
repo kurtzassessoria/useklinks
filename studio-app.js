@@ -65,7 +65,7 @@ function Studio() {
         return;
       }
       setUser(u);
-      if (/[?&]reset=1/.test(location.search) || /type=recovery/.test(location.hash)) {
+      if (/[?&]reset=1/.test(location.search) || /type=(recovery|invite)/.test(location.hash)) {
         setPhase('newpw');
         return;
       }

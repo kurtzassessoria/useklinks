@@ -33,3 +33,5 @@ window.KLINKS_PUBLIC_BASE       = 'https://useklinks.com';
 window.KLINKS_UPGRADE_URL       = '';
 /* WhatsApp comercial da Kurtz (só números, com 55). Usado se não houver checkout. */
 window.KLINKS_SALES_WHATSAPP    = '';
+/* Página real mostrada como exemplo na tela de cadastro (precisa estar publicada). */
+window.KLINKS_SHOWCASE_SLUG     = 'pinerolo';

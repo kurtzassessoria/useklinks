@@ -251,3 +251,6 @@ button{font-family:inherit;color:inherit}
 .st-lead-r:first-child{border-top:0;padding-top:0}
 .st-lead-r>div{flex:1;min-width:0}.st-lead-r b{display:block;font-size:14px}
 .st-lead-r span{display:block;font-size:12.5px;color:var(--s-mut);margin-top:2px}
+.st-auth-r{gap:14px;align-content:center}
+.st-auth-tag+.st-auth-phone{height:min(740px,calc(100vh - 110px))}
+.st-auth-tag{position:relative;z-index:1;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;border-radius:999px;background:var(--s-card,#1c1b1a);color:var(--s-ink);box-shadow:0 2px 10px #0002}

@@ -75,7 +75,7 @@
       fontWeight: 700,
       textDecoration: 'none'
     }
-  }, "Criar minha p\xE1gina gr\xE1tis")));
+  }, "Criar minha p\xE1gina")));
 }
 (async () => {
   const B = window.KlinksBackend,
@@ -140,9 +140,26 @@
   window.KlinksAnalytics && window.KlinksAnalytics.track('view', {
     label: 'Visita'
   });
-  root.render(React.createElement(BioPage, {
+  const url = B.shareUrl(row.slug);
+  root.render(React.createElement("div", {
+    className: "bp-desk"
+  }, React.createElement("div", {
+    className: "bp-desk-bg",
+    style: cfg.profile.cover ? {
+      backgroundImage: 'url(' + cfg.profile.cover + ')'
+    } : {
+      background: t.bg
+    }
+  }), React.createElement("div", {
+    className: "bp-desk-phone"
+  }, React.createElement(BioPage, {
     cfg: cfg
-  }));
+  })), React.createElement("aside", {
+    className: "bp-desk-qr"
+  }, React.createElement("img", {
+    alt: "QR Code",
+    src: 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data=' + encodeURIComponent(url + (url.includes('?') ? '&' : '?') + 'src=qr')
+  }), React.createElement("b", null, "Abra no celular"), React.createElement("span", null, "Aponte a c\xE2mera para pedir pelo celular."))));
 })();</script>
 </body>
 </html>

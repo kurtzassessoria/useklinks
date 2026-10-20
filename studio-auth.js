@@ -80,7 +80,8 @@ function SegmentPick({
 }
 function AuthShell({
   children,
-  preview
+  preview,
+  previewLabel
 }) {
   return React.createElement("div", {
     className: "st-auth"
@@ -100,7 +101,9 @@ function AuthShell({
     className: "st-demo-bar"
   }, "Modo demonstra\xE7\xE3o \u2014 contas e p\xE1ginas ficam s\xF3 neste navegador.") : null), React.createElement("div", {
     className: "st-auth-r"
-  }, preview ? React.createElement("div", {
+  }, previewLabel ? React.createElement("div", {
+    className: "st-auth-tag"
+  }, previewLabel) : null, preview ? React.createElement("div", {
     className: "st-phone st-auth-phone"
   }, React.createElement("div", {
     className: "st-phone-s"
@@ -132,12 +135,30 @@ function AuthScreen({
   React.useEffect(() => {
     if (!touchedSlug) setSlug(B.slugify(name));
   }, [name]);
-  const preview = React.useMemo(() => K.buildConfig({
+  const [showcase, setShowcase] = React.useState(null);
+  const [touched, setTouchedForm] = React.useState(false);
+  React.useEffect(() => {
+    const sc = window.KLINKS_SHOWCASE_SLUG;
+    if (!sc) return;
+    B.init().then(() => B.engine.loadPublic(sc)).then(r => {
+      if (r) setShowcase({
+        ...K.DEFAULT,
+        ...(K.migrateLegacy(r.config) || {}),
+        slug: r.slug
+      });
+    }).catch(() => {});
+  }, []);
+  React.useEffect(() => {
+    if (name.trim() || segment !== 'pizzaria') setTouchedForm(true);
+  }, [name, segment]);
+  const built = React.useMemo(() => K.buildConfig({
     name: name || 'Seu restaurante',
     slug: slug || 'seu-restaurante',
     segment,
     whatsapp: wa
   }), [name, slug, segment, wa]);
+  const useShow = showcase && !touched;
+  const preview = useShow ? showcase : built;
   const doSignup = async e => {
     e.preventDefault();
     setErr('');
@@ -240,9 +261,10 @@ function AuthScreen({
       setErr('');
       setInfo('');
     }
-  }, "Criar conta gr\xE1tis"))));
+  }, "Criar conta"))));
   return React.createElement(AuthShell, {
-    preview: preview
+    preview: preview,
+    previewLabel: useShow ? 'Exemplo real · ' + showcase.profile.name : touched ? 'Prévia da sua página' : null
   }, React.createElement("form", {
     onSubmit: doSignup
   }, React.createElement("div", {
@@ -358,12 +380,30 @@ function CreatePage({
   const [err, setErr] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const check = useSlugCheck(slug);
-  const preview = React.useMemo(() => K.buildConfig({
+  const [showcase, setShowcase] = React.useState(null);
+  const [touched, setTouchedForm] = React.useState(false);
+  React.useEffect(() => {
+    const sc = window.KLINKS_SHOWCASE_SLUG;
+    if (!sc) return;
+    B.init().then(() => B.engine.loadPublic(sc)).then(r => {
+      if (r) setShowcase({
+        ...K.DEFAULT,
+        ...(K.migrateLegacy(r.config) || {}),
+        slug: r.slug
+      });
+    }).catch(() => {});
+  }, []);
+  React.useEffect(() => {
+    if (name.trim() || segment !== 'pizzaria') setTouchedForm(true);
+  }, [name, segment]);
+  const built = React.useMemo(() => K.buildConfig({
     name: name || 'Seu restaurante',
     slug: slug || 'seu-restaurante',
     segment,
     whatsapp: wa
   }), [name, slug, segment, wa]);
+  const useShow = showcase && !touched;
+  const preview = useShow ? showcase : built;
   const submit = async e => {
     e.preventDefault();
     setErr('');
@@ -385,7 +425,8 @@ function CreatePage({
     setBusy(false);
   };
   return React.createElement(AuthShell, {
-    preview: preview
+    preview: preview,
+    previewLabel: useShow ? 'Exemplo real · ' + showcase.profile.name : touched ? 'Prévia da sua página' : null
   }, React.createElement("form", {
     onSubmit: submit
   }, React.createElement("h1", {
