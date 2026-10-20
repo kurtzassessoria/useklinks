@@ -50,6 +50,7 @@ input[type=text]{width:100%;height:42px;border-radius:10px;border:1px solid #fff
 <div class="ui">
 <aside class="side">
 <div><h1>Plaquinha e adesivos</h1><p id="who">Carregando…</p></div>
+<div class="f" id="pick" hidden><label>Cliente (endereço da página)</label><div style="display:flex;gap:6px"><input type="text" id="slug" placeholder="pinerolo"><button class="go" style="height:42px;padding:0 14px;font-size:13px" id="load">Abrir</button></div></div>
 <div class="f"><label>Formato</label><div class="seg" id="fmt"><button data-v="disp" class="on">Display de mesa</button><button data-v="st">Adesivos</button><button data-v="cd">Cartões</button></div></div>
 <div class="f"><label>Chamada</label><input type="text" id="hl" value="Peça pelo celular" maxlength="40"></div>
 <div class="f"><label>Texto de apoio</label><input type="text" id="sub" value="Cardápio, promoções e WhatsApp em um toque" maxlength="60"></div>
@@ -69,10 +70,18 @@ input[type=text]{width:100%;height:42px;border-radius:10px;border:1px solid #fff
 (async () => {
   const B = window.KlinksBackend, K = window.KStudio;
   const slug = new URLSearchParams(location.search).get('s') || '';
-  let cfg = null;
-  try { await B.init(); const r = slug && await B.engine.loadPublic(slug); if (r) cfg = { ...K.DEFAULT, ...(K.migrateLegacy(r.config) || {}), slug: r.slug }; } catch (e) { console.warn(e); }
   const who = document.getElementById('who');
-  if (!cfg) { who.textContent = 'Página não encontrada. Publique sua página no Studio e abra esta tela pela aba Compartilhar.'; return; }
+  const block = (msg) => { document.querySelectorAll('.side>*:not(:first-child)').forEach(el => el.style.display = 'none'); who.innerHTML = msg; document.getElementById('sheet').innerHTML = ''; };
+  try { await B.init(); } catch (e) {}
+  const u = await B.engine.getUser().catch(() => null);
+  if (!u) return block('Área restrita da Kurtz. <a href="/entrar">Entre com sua conta de administrador</a> e abra esta tela de novo.');
+  if (!(await B.engine.isAdmin())) return block('Área restrita. Sua conta não tem permissão de administrador.');
+  const pick = document.getElementById('pick'); pick.hidden = false;
+  document.getElementById('slug').value = slug;
+  document.getElementById('load').onclick = () => { const v = document.getElementById('slug').value.trim().toLowerCase().replace(/^.*\//, ''); if (v) location.search = '?s=' + encodeURIComponent(v); };
+  let cfg = null;
+  try { const r = slug && await B.engine.loadPublic(slug); if (r) cfg = { ...K.DEFAULT, ...(K.migrateLegacy(r.config) || {}), slug: r.slug }; } catch (e) { console.warn(e); }
+  if (!cfg) { who.textContent = slug ? 'Página "' + slug + '" não encontrada. Confira o endereço e se ela está publicada.' : 'Digite o endereço da página do cliente.'; return; }
   who.textContent = cfg.profile.name + ' · ' + B.prettyUrl(slug);
   const st = { fmt: 'disp', col: 'page' };
   const esc = (s) => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

@@ -162,8 +162,24 @@ create policy "restaurants bucket: dono atualiza" on storage.objects for update 
 create policy "restaurants bucket: dono apaga" on storage.objects for delete to authenticated
   using (bucket_id = 'restaurants' and (storage.foldername(name))[1] in (select slug from public.restaurants where owner_id = auth.uid()));
 
+-- 4b) ADMINISTRADORES (Kurtz) ─────────────────────────────────────────────
+-- Quem está nesta lista vê as ferramentas internas (ex.: gerar plaquinha).
+create table if not exists public.klinks_admins (email text primary key, created_at timestamptz default now());
+alter table public.klinks_admins enable row level security; -- sem policies: ninguém lê pelo navegador
+create or replace function public.is_admin() returns boolean
+language sql security definer set search_path = public stable as $$
+  select exists (select 1 from klinks_admins where lower(email) = lower(coalesce(auth.jwt()->>'email','')));
+$$;
+grant execute on function public.is_admin() to authenticated;
+-- ⚠️ Troque pelo SEU e-mail de login no KLINKS antes de rodar:
+insert into public.klinks_admins (email) values (lower('SEU-EMAIL@gmail.com')) on conflict do nothing;
+
 -- 5) OPERAÇÃO (rode manualmente quando precisar) ─────────────────────────
 -- Ativar Pro após pagamento no Cakto:
 --   update restaurants set plan = 'pro', plan_until = now() + interval '31 days' where slug = 'pinerolo';
 -- Convidar cliente (a Kurtz monta, o dono entra com este e-mail e assume):
 --   insert into restaurants (slug, owner_email, config) values ('pinerolo', 'dono@email.com', '{}');
+-- Adicionar outro administrador:
+--   insert into klinks_admins (email) values ('socio@email.com');
+-- Remover:
+--   delete from klinks_admins where email = 'socio@email.com';

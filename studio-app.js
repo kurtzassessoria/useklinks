@@ -175,6 +175,10 @@ function Editor({
     ...(lsGet('klinks_studio_nav') || {})
   }));
   const [toast, setToast] = React.useState('');
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  React.useEffect(() => {
+    B.engine.isAdmin ? B.engine.isAdmin().then(setIsAdmin) : null;
+  }, []);
   const [pvOpen, setPvOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const mainRef = React.useRef(null);
@@ -217,6 +221,7 @@ function Editor({
     toast: setToast,
     user,
     setUser,
+    isAdmin,
     publicUrl: B.liveUrl(rest.slug),
     shareUrl: B.shareUrl(rest.slug),
     prettyUrl: B.prettyUrl(rest.slug),

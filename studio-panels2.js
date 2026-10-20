@@ -506,7 +506,7 @@ function SharePanel({
     });
     setTimeout(() => setCopied(''), 1500);
   };
-  const chans = [['ig', 'Bio do Instagram', 'instagram', '#e1306c'], ['wa', 'Status e grupos do WhatsApp', 'whatsapp', '#22c55e'], ['google', 'Perfil no Google', 'star', '#f5b301'], ['qr', 'QR Code da mesa / embalagem', 'tag', '#64748b'], ['nfc', 'Plaquinha NFC (gravar no chip)', 'phone', '#111827']];
+  const chans = [['ig', 'Bio do Instagram', 'instagram', '#e1306c'], ['wa', 'Status e grupos do WhatsApp', 'whatsapp', '#22c55e'], ['google', 'Perfil no Google', 'star', '#f5b301'], ['qr', 'QR Code da mesa / embalagem', 'tag', '#64748b'], ...(s.isAdmin ? [['nfc', 'Plaquinha NFC (gravar no chip)', 'phone', '#111827']] : [])];
   const withSrc = k => url + (url.includes('?') ? '&' : '?') + 'src=' + k;
   return React.createElement("div", {
     className: "st-col"
@@ -576,9 +576,11 @@ function SharePanel({
     href: 'https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&format=png&data=' + encodeURIComponent(withSrc('qr')),
     target: "_blank",
     rel: "noopener"
-  }, "Baixar QR"))))), React.createElement("div", {
+  }, "Baixar QR"))))), s.isAdmin ? React.createElement(React.Fragment, null, React.createElement("div", {
     className: "st-sec"
-  }, "Plaquinha, display de mesa e adesivos"), React.createElement("div", {
+  }, "Plaquinha, display de mesa e adesivos ", React.createElement("span", {
+    className: "st-lock st-pro"
+  }, "ADM")), React.createElement("div", {
     className: "st-card",
     style: {
       display: 'flex',
@@ -610,7 +612,7 @@ function SharePanel({
     href: '/plaquinha?s=' + encodeURIComponent(s.cfg.slug),
     target: "_blank",
     rel: "noopener"
-  }, "Montar arte")), React.createElement("div", {
+  }, "Montar arte"))) : null, React.createElement("div", {
     className: "st-sec"
   }, "Um link para cada canal"), React.createElement("p", {
     className: "st-lead",

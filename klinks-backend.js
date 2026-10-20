@@ -65,6 +65,7 @@
         if (error && /session_id/i.test(error.message)) { const { session_id, ...r } = row; ({ error } = await c.from('shortcut_clicks').insert(r)); }
         if (error) console.warn('[KLINKS] track', error.message);
       },
+      async isAdmin() { try { return !!(await run(c.rpc('is_admin'))); } catch (e) { return false; } },
       async saveLead(row) { const { error } = await timeout(c.from('leads').insert(row), T); if (error) throw new Error(traduz(error.message)); },
       async leads(slug) { return await run(c.from('leads').select('id,name,phone,source,created_at').eq('restaurant_slug', slug).order('created_at', { ascending: false }).limit(5000)); },
       async deleteLead(id) { await run(c.from('leads').delete().eq('id', id)); },
@@ -118,6 +119,7 @@
       async setPlan(slug, plan) { const d = db(); if (d.restaurants[slug]) { d.restaurants[slug].plan = plan; save(d); } },
       async loadPublic(slug) { const r = db().restaurants[slug]; return r ? { slug, plan: r.plan, config: r.config } : null; },
       async track() { /* analytics.js já guarda localmente */ },
+      async isAdmin() { return true; },
       async saveLead(row) { await wait(); const k = 'klinks_local_leads'; let a = []; try { a = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) {} a.unshift({ ...row, id: 'l' + Date.now(), created_at: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(a.slice(0, 500))); },
       async leads(slug) { try { return JSON.parse(localStorage.getItem('klinks_local_leads') || '[]').filter(l => l.restaurant_slug === slug); } catch (e) { return []; } },
       async deleteLead(id) { const k = 'klinks_local_leads'; try { localStorage.setItem(k, JSON.stringify(JSON.parse(localStorage.getItem(k) || '[]').filter(l => l.id !== id))); } catch (e) {} },
