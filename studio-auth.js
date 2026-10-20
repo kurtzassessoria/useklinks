@@ -220,6 +220,69 @@ function AuthScreen({
     }
     setBusy(false);
   };
+  const doFirst = async e => {
+    e.preventDefault();
+    setErr('');
+    setInfo('');
+    if (pw.length < 6) return setErr('A senha precisa ter pelo menos 6 caracteres.');
+    setBusy(true);
+    try {
+      const r = await B.engine.signUp(email.trim(), pw);
+      if (r.needsConfirm) {
+        setInfo('Pronto! Enviamos um e-mail para ' + email + '. Abra e toque em “Confirmar meu e-mail” — sua página abre na hora.');
+        setBusy(false);
+        return;
+      }
+      onAuthed();
+    } catch (x) {
+      setErr(/registered|cadastrad/i.test(x.message) ? 'Esse e-mail já tem conta. Use “Entrar” ou “Esqueci minha senha”.' : x.message);
+    }
+    setBusy(false);
+  };
+  if (tab === 'first') return React.createElement(AuthShell, null, React.createElement("form", {
+    onSubmit: doFirst
+  }, React.createElement("h1", {
+    className: "st-h1"
+  }, "Primeiro acesso"), React.createElement("p", {
+    className: "st-lead",
+    style: {
+      marginBottom: 20
+    }
+  }, "Sua p\xE1gina foi montada pela Assessoria Kurtz. Use o mesmo e-mail que voc\xEA passou para a gente e crie sua senha."), info ? React.createElement("div", {
+    className: "st-ok"
+  }, info) : null, err ? React.createElement("div", {
+    className: "st-err"
+  }, err) : null, React.createElement(SField, {
+    label: "E-mail"
+  }, React.createElement(SInput, {
+    type: "email",
+    value: email,
+    onChange: setEmail,
+    required: true,
+    autoComplete: "email"
+  })), React.createElement(SField, {
+    label: "Crie uma senha",
+    hint: "M\xEDnimo de 6 caracteres."
+  }, React.createElement(SInput, {
+    type: "password",
+    value: pw,
+    onChange: setPw,
+    required: true,
+    minLength: 6,
+    autoComplete: "new-password"
+  })), React.createElement("button", {
+    className: "st-btn pri full",
+    disabled: busy
+  }, busy ? 'Criando…' : 'Criar senha e acessar'), React.createElement("div", {
+    className: "st-auth-links"
+  }, React.createElement("span", null), React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setTab('login');
+      setErr('');
+      setInfo('');
+    }
+  }, "J\xE1 tenho senha \u2014 entrar"))));
   if (tab === 'login') return React.createElement(AuthShell, null, React.createElement("form", {
     onSubmit: doLogin
   }, React.createElement("h1", {
@@ -257,11 +320,23 @@ function AuthScreen({
   }, "Esqueci minha senha"), React.createElement("button", {
     type: "button",
     onClick: () => {
+      setTab('first');
+      setErr('');
+      setInfo('');
+    }
+  }, "Primeiro acesso")), React.createElement("div", {
+    className: "st-auth-links",
+    style: {
+      marginTop: 4
+    }
+  }, React.createElement("span", null), React.createElement("button", {
+    type: "button",
+    onClick: () => {
       setTab('signup');
       setErr('');
       setInfo('');
     }
-  }, "Criar conta"))));
+  }, "Criar uma p\xE1gina nova"))));
   return React.createElement(AuthShell, {
     preview: preview,
     previewLabel: useShow ? 'Exemplo real · ' + showcase.profile.name : touched ? 'Prévia da sua página' : null
@@ -589,5 +664,8 @@ Object.assign(window, {
   CreatePage,
   NewPasswordScreen,
   UiToggle,
-  useUiTheme
+  useUiTheme,
+  useSlugCheck,
+  SlugField,
+  SegmentPick
 });

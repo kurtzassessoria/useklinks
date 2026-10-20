@@ -54,6 +54,36 @@ function Studio() {
   const [cfg, setCfg] = React.useState(null);
   const [pub, setPub] = React.useState(null);
   const [bootErr, setBootErr] = React.useState('');
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const openPage = (r, admin) => {
+    const live = {
+      ...clone(K.DEFAULT),
+      ...(K.migrateLegacy(r.config) || {}),
+      slug: r.slug
+    };
+    delete live.plan;
+    setRest({
+      slug: r.slug,
+      plan: 'pro',
+      admin: !!admin,
+      ownerEmail: r.owner_email,
+      claimed: r.claimed
+    });
+    setPub(JSON.stringify(live));
+    setCfg(lsGet('klinks_draft_' + r.slug) || live);
+    setPhase('editor');
+  };
+  const openClient = async slug => {
+    setPhase('boot');
+    try {
+      const r = await B.engine.adminLoad(slug);
+      if (!r) throw new Error('Página não encontrada.');
+      openPage(r, true);
+    } catch (e) {
+      setBootErr(e.message);
+      setPhase('error');
+    }
+  };
   const boot = React.useCallback(async () => {
     setPhase('boot');
     setBootErr('');
@@ -69,24 +99,18 @@ function Studio() {
         setPhase('newpw');
         return;
       }
+      const adm = B.engine.isAdmin ? await B.engine.isAdmin() : false;
+      setIsAdmin(adm);
+      if (adm) {
+        setPhase('admin');
+        return;
+      }
       const r = await B.engine.myRestaurant();
       if (!r) {
         setPhase('create');
         return;
       }
-      const live = {
-        ...clone(K.DEFAULT),
-        ...(K.migrateLegacy(r.config) || {}),
-        slug: r.slug
-      };
-      delete live.plan;
-      setRest({
-        slug: r.slug,
-        plan: 'pro'
-      });
-      setPub(JSON.stringify(live));
-      setCfg(lsGet('klinks_draft_' + r.slug) || live);
-      setPhase('editor');
+      openPage(r, false);
     } catch (e) {
       setBootErr(e.message);
       setPhase('error');
@@ -128,7 +152,7 @@ function Studio() {
   if (phase === 'auth') {
     const p = location.pathname + location.search;
     return React.createElement(AuthScreen, {
-      initial: /entrar|login/.test(p) ? 'login' : 'signup',
+      initial: /primeiro/.test(p) ? 'first' : /entrar|login/.test(p) ? 'login' : 'signup',
       onAuthed: boot
     });
   }
@@ -137,6 +161,11 @@ function Studio() {
       history.replaceState(null, '', '/');
       boot();
     }
+  });
+  if (phase === 'admin') return React.createElement(AdminHome, {
+    user: user,
+    onOpen: openClient,
+    onSignOut: signOut
   });
   if (phase === 'create') return React.createElement(CreatePage, {
     user: user,
@@ -148,6 +177,8 @@ function Studio() {
     K: K,
     user: user,
     setUser: setUser,
+    isAdmin: isAdmin,
+    onAdminHome: () => setPhase('admin'),
     rest: rest,
     setRest: setRest,
     cfg: cfg,
@@ -162,6 +193,8 @@ function Editor({
   K,
   user,
   setUser,
+  isAdmin,
+  onAdminHome,
   rest,
   setRest,
   cfg,
@@ -175,10 +208,6 @@ function Editor({
     ...(lsGet('klinks_studio_nav') || {})
   }));
   const [toast, setToast] = React.useState('');
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  React.useEffect(() => {
-    B.engine.isAdmin ? B.engine.isAdmin().then(setIsAdmin) : null;
-  }, []);
   const [pvOpen, setPvOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const mainRef = React.useRef(null);
@@ -327,7 +356,7 @@ function Editor({
   const publish = async () => {
     setBusy(true);
     try {
-      await B.engine.saveConfig(rest.slug, cfg);
+      await (rest.admin ? B.engine.adminSave(rest.slug, cfg) : B.engine.saveConfig(rest.slug, cfg));
       setPub(JSON.stringify(cfg));
       setToast('Publicado! Sua página já está atualizada.');
     } catch (e) {
@@ -371,7 +400,27 @@ function Editor({
   }, React.createElement("div", {
     className: "st-brand img",
     title: "Assessoria Kurtz"
-  }), RAIL.map(([id, label]) => React.createElement("button", {
+  }), isAdmin ? React.createElement("button", {
+    className: "st-rb",
+    onClick: () => {
+      if (JSON.stringify(cfg) !== pub && !confirm('Há alterações não publicadas. Voltar mesmo assim? (o rascunho fica salvo neste navegador)')) return;
+      onAdminHome();
+    },
+    "aria-label": "Clientes"
+  }, React.createElement("svg", {
+    width: "22",
+    height: "22",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, React.createElement("path", {
+    d: "M3 10.5L12 4l9 6.5M5 9v11h14V9M10 20v-6h4v6"
+  })), React.createElement("span", {
+    className: "tip"
+  }, "Todos os clientes (ADM)")) : null, RAIL.map(([id, label]) => React.createElement("button", {
     key: id,
     className: 'st-rb' + (nav.panel === id ? ' on' : ''),
     onClick: () => s.go({
@@ -423,7 +472,9 @@ function Editor({
   }, "Configura\xE7\xF5es"))), React.createElement("main", {
     className: "st-main",
     ref: mainRef
-  }, B.mode === 'local' ? React.createElement("div", {
+  }, rest.admin ? React.createElement("div", {
+    className: "st-adm-bar"
+  }, React.createElement("b", null, "ADM"), " Editando ", React.createElement("b", null, full.profile?.name || rest.slug), " \xB7 ", rest.claimed ? 'conta do dono ativa' : rest.ownerEmail ? 'aguardando primeiro acesso de ' + rest.ownerEmail : 'sem e-mail do dono') : null, B.mode === 'local' ? React.createElement("div", {
     className: "st-demo-bar top"
   }, "Modo demonstra\xE7\xE3o \u2014 tudo fica salvo s\xF3 neste navegador. Em useklinks.com usa o banco de dados real.") : null, panel), React.createElement("section", {
     className: 'st-pv' + (pvOpen ? ' open' : '')

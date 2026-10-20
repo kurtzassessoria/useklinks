@@ -16,6 +16,7 @@
 
   function traduz(msg) {
     const m = String(msg || '').toLowerCase();
+    if (m.includes('not_admin')) return 'Sua conta não tem permissão de administrador.';
     if (m.includes('should be different')) return 'A nova senha precisa ser diferente da atual.';
     if (m.includes('reauthentication') || m.includes('session missing') || m.includes('jwt')) return 'Sua sessão expirou. Entre de novo e tente outra vez.';
     if (m.includes('invalid login')) return 'E-mail ou senha incorretos.';
@@ -40,7 +41,7 @@
       async ping() { await run(c.from('public_pages').select('slug', { head: true, count: 'exact' }).limit(1)); },
       async getUser() { const { data } = await c.auth.getSession(); return data?.session?.user || null; },
       async signUp(email, pw) {
-        const { data, error } = await timeout(c.auth.signUp({ email, password: pw }), T);
+        const { data, error } = await timeout(c.auth.signUp({ email, password: pw, options: { emailRedirectTo: location.origin + '/entrar' } }), T);
         if (error) throw new Error(traduz(error.message));
         if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new Error(traduz('already registered'));
         return { user: data.user, needsConfirm: !data.session };
@@ -66,6 +67,11 @@
         if (error) console.warn('[KLINKS] track', error.message);
       },
       async isAdmin() { try { return !!(await run(c.rpc('is_admin'))); } catch (e) { return false; } },
+      async adminList() { return await run(c.rpc('admin_list_restaurants')) || []; },
+      async adminCreate(slug, email, config) { await run(c.rpc('admin_create_restaurant', { p_slug: slug, p_email: email || '', p_config: config })); },
+      async adminLoad(slug) { const r = await run(c.rpc('admin_get_restaurant', { p_slug: slug })); return r && r[0] || null; },
+      async adminSave(slug, config) { const { plan, ...clean } = config; await run(c.rpc('admin_save_config', { p_slug: slug, p_config: clean })); },
+      async adminSetEmail(slug, email) { await run(c.rpc('admin_set_email', { p_slug: slug, p_email: email || '' })); },
       async saveLead(row) { const { error } = await timeout(c.from('leads').insert(row), T); if (error) throw new Error(traduz(error.message)); },
       async leads(slug) { return await run(c.from('leads').select('id,name,phone,source,created_at').eq('restaurant_slug', slug).order('created_at', { ascending: false }).limit(5000)); },
       async deleteLead(id) { await run(c.from('leads').delete().eq('id', id)); },
@@ -108,7 +114,7 @@
       async updateEmail(email) { await wait(); email = email.toLowerCase(); const d = db(); if (d.users[email]) throw new Error(traduz('already registered')); d.users[email] = d.users[d.session]; delete d.users[d.session]; d.session = email; save(d); return { needsConfirm: false }; },
       async signOutAll() { const d = db(); d.session = null; save(d); },
       async slugAvailable(s) { await wait(150); return validSlug(s) && !db().restaurants[s]; },
-      async myRestaurant() { const d = db(); const u = d.session && d.users[d.session]; if (!u) return null; const r = Object.entries(d.restaurants).find(([, v]) => v.owner === u.id); return r ? { slug: r[0], plan: r[1].plan, config: r[1].config } : null; },
+      async myRestaurant() { const d = db(); const u = d.session && d.users[d.session]; if (!u) return null; if (!Object.values(d.restaurants).some(v => v.owner === u.id)) { const inv = Object.values(d.restaurants).find(v => !v.owner && v.ownerEmail === d.session); if (inv) { inv.owner = u.id; save(d); } } const r = Object.entries(d.restaurants).find(([, v]) => v.owner === u.id); return r ? { slug: r[0], plan: r[1].plan, config: r[1].config } : null; },
       async createRestaurant(slug, config) {
         await wait(); const d = db(); const u = d.users[d.session]; if (!u) throw new Error('Entre na sua conta.');
         if (Object.values(d.restaurants).some(v => v.owner === u.id)) throw new Error(traduz('already_has_restaurant'));
@@ -120,6 +126,11 @@
       async loadPublic(slug) { const r = db().restaurants[slug]; return r ? { slug, plan: r.plan, config: r.config } : null; },
       async track() { /* analytics.js já guarda localmente */ },
       async isAdmin() { return true; },
+      async adminList() { const d = db(); return Object.entries(d.restaurants).map(([slug, v]) => ({ slug, owner_email: v.ownerEmail || Object.keys(d.users).find(e => d.users[e].id === v.owner) || '', claimed: !!v.owner, name: v.config?.profile?.name || slug })); },
+      async adminCreate(slug, email, config) { await wait(); const d = db(); if (!validSlug(slug) || d.restaurants[slug]) throw new Error(traduz('slug_taken')); d.restaurants[slug] = { owner: null, ownerEmail: (email || '').toLowerCase(), plan: 'pro', config }; save(d); },
+      async adminLoad(slug) { const d = db(), v = d.restaurants[slug]; return v ? { slug, owner_email: v.ownerEmail || '', claimed: !!v.owner, config: v.config } : null; },
+      async adminSave(slug, config) { const d = db(); if (!d.restaurants[slug]) throw new Error('Página não encontrada.'); const { plan, ...clean } = config; d.restaurants[slug].config = clean; save(d); },
+      async adminSetEmail(slug, email) { const d = db(); if (d.restaurants[slug] && !d.restaurants[slug].owner) { d.restaurants[slug].ownerEmail = (email || '').toLowerCase(); save(d); } },
       async saveLead(row) { await wait(); const k = 'klinks_local_leads'; let a = []; try { a = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) {} a.unshift({ ...row, id: 'l' + Date.now(), created_at: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(a.slice(0, 500))); },
       async leads(slug) { try { return JSON.parse(localStorage.getItem('klinks_local_leads') || '[]').filter(l => l.restaurant_slug === slug); } catch (e) { return []; } },
       async deleteLead(id) { const k = 'klinks_local_leads'; try { localStorage.setItem(k, JSON.stringify(JSON.parse(localStorage.getItem(k) || '[]').filter(l => l.id !== id))); } catch (e) {} },
