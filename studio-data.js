@@ -33,7 +33,9 @@ const LINK_PRESETS = [
 ];
 const BLOCK_TYPES = [
   {type:'offer',group:'Vender',name:'Oferta',desc:'Promoção com preço, cupom e prazo',icon:'tag',color:'#ff5a1f'},
-  {type:'review',group:'Vender',name:'Avaliações no Google',desc:'Peça 5 estrelas a quem já comprou',icon:'star',color:'#f5b301'},
+  {type:'menu',group:'Vender',name:'Mais pedidos',desc:'Os campeões de venda com foto e preço',icon:'menu',color:'#7c3aed'},
+  {type:'lead',group:'Vender',name:'Cupom por WhatsApp',desc:'Troque um cupom pelo WhatsApp do cliente',icon:'ticket',color:'#22c55e'},
+  {type:'review',group:'Vender',name:'Avaliações no Google',desc:'Nota, depoimentos e botão “Avalie a gente”',icon:'star',color:'#f5b301'},
   {type:'link',group:'Conteúdo',name:'Botão',desc:'Delivery, WhatsApp, cardápio, reservas',icon:'link',color:'#7c3aed'},
   {type:'text',group:'Conteúdo',name:'Aviso / texto',desc:'Recado rápido, novidade, história',icon:'text',color:'#64748b'},
   {type:'map',group:'Local',name:'Mapa',desc:'Google Maps com o seu endereço',icon:'map',color:'#ea4335'},
@@ -60,7 +62,12 @@ function newBlock(type, preset) {
   if (type === 'offer') { const t = preset || OFFER_TEMPLATES[0]; return {id,type,on:true,image:'',imageY:50,eyebrow:t.eyebrow||'',title:t.title,desc:t.desc||'',priceFrom:t.priceFrom||'',priceTo:t.priceTo||'',coupon:t.coupon||'',ends:endOfMonth(),cta:t.cta||'Aproveitar',url:''}; }
   if (type === 'map') return {id,type,on:true,address:'',label:'Como chegar'};
   if (type === 'hours') return {id,type,on:true,week:defaultWeek()};
-  if (type === 'review') return {id,type,on:true,label:'Nos avalie no Google',sub:'Leva 10 segundos e ajuda muito',url:''};
+  if (type === 'review') return {id,type,on:true,label:'Nos avalie no Google',sub:'Leva 10 segundos e ajuda muito',url:'',rating:'',count:'',quotes:[]};
+  if (type === 'menu') return {id,type,on:true,title:'Mais pedidos',url:'',items:[
+    {id:uid(),name:'Produto campeão',desc:'O que mais sai da casa.',price:'49,90',image:'',url:''},
+    {id:uid(),name:'Segundo mais pedido',desc:'',price:'39,90',image:'',url:''},
+    {id:uid(),name:'Terceiro mais pedido',desc:'',price:'29,90',image:'',url:''}]};
+  if (type === 'lead') return {id,type,on:true,title:'Ganhe 10% OFF no 1º pedido',desc:'Deixe seu WhatsApp e receba o cupom na hora.',coupon:'BEMVINDO10',cta:'Quero meu cupom',url:''};
   if (type === 'text') return {id,type,on:true,title:'',text:'Escreva aqui um recado para seus clientes.'};
 }
 
@@ -152,10 +159,14 @@ function statusNow(week, now = new Date()) {
 }
 
 // ── Ofertas ──
+const daysLabel = (ds) => ds.length === 7 ? 'todos os dias' : ds.slice().sort().map(i => WEEK_S[i].toLowerCase()).join(', ');
 function offerState(b, now = new Date()) {
-  if (!b.ends) return {active:true,label:''};
+  const ds = Array.isArray(b.days) && b.days.length && b.days.length < 7 ? b.days : null;
+  if (b.ends && new Date(b.ends + 'T23:59:59') < now) return {active:false,label:'Encerrada'};
+  if (ds && !ds.includes(now.getDay())) return {active:false,scheduled:true,label:'Só ' + daysLabel(ds)};
+  if (!b.ends) return {active:true,label: ds ? 'Só hoje!' : ''};
   const end = new Date(b.ends + 'T23:59:59'); const ms = end - now;
-  if (ms < 0) return {active:false,label:'Encerrada'};
+  if (ds) return {active:true,label:'Só hoje!'};
   const days = Math.floor(ms / 864e5);
   return {active:true,label: days === 0 ? 'Último dia!' : days === 1 ? 'Termina amanhã' : `Termina em ${days} dias`};
 }
@@ -180,13 +191,13 @@ function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let
 function emptyStats(days) {
   const daily = []; const now = new Date();
   for (let i = days-1; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate()-i); daily.push({date:isoDate(d),dow:d.getDay(),views:0,clicks:0}); }
-  return {daily,views:0,clicks:0,people:0,clickers:0,top:{},src:{Instagram:0,WhatsApp:0,Google:0,'QR Code':0,Direto:0},mobile:0,heat:Array.from({length:7},()=>Array(24).fill(0))};
+  return {daily,views:0,clicks:0,people:0,clickers:0,top:{},src:{Instagram:0,WhatsApp:0,Google:0,'QR Code':0,'Plaquinha NFC':0,Direto:0},mobile:0,heat:Array.from({length:7},()=>Array(24).fill(0))};
 }
 function finalize(s, cfg) {
   // Taxa de clique = visitas que clicaram em algo ÷ visitas (nunca passa de 100%).
   s.ctr = s.views ? Math.min(100, Math.round((s.clickers || Math.min(s.clicks, s.views)) / s.views * 100)) : 0;
   const names = {};
-  (cfg?.blocks || []).forEach(b => { names[b.id] = b.type === 'offer' ? 'Oferta · ' + b.title : b.type === 'map' ? (b.label || 'Como chegar') + ' (mapa)' : b.label; names[b.id + '-cupom'] = 'Cupom · ' + (b.coupon || ''); });
+  (cfg?.blocks || []).forEach(b => { names[b.id] = b.type === 'offer' ? 'Oferta · ' + b.title : b.type === 'map' ? (b.label || 'Como chegar') + ' (mapa)' : b.label; names[b.id + '-cupom'] = 'Cupom · ' + (b.coupon || ''); if (b.type === 'menu') (b.items || []).forEach(it => names[b.id + '-' + it.id] = 'Mais pedidos · ' + it.name); if (b.type === 'lead') names[b.id] = 'Cupom por WhatsApp (cadastros)'; if (b.type === 'review') names[b.id] = 'Avaliar no Google'; });
   ['instagram','facebook','tiktok','whatsapp'].forEach(n => names['social-' + n] = 'Ícone ' + n);
   s.topList = Object.entries(s.top).map(([k,v]) => ({label: names[k] || v.label || k, n: v.n, gone: !names[k] && !!k})).sort((a,b) => b.n-a.n);
   s.srcList = Object.entries(s.src).map(([label,n]) => ({label,n})).filter(x => x.n).sort((a,b) => b.n-a.n);
@@ -197,7 +208,7 @@ function finalize(s, cfg) {
 }
 function demoStats(cfg, days) {
   const r = rng(days * 97 + (cfg.slug||'').length), s = emptyStats(days);
-  const links = cfg.blocks.filter(b => b.on && ['link','offer','review','map'].includes(b.type));
+  const links = cfg.blocks.filter(b => b.on && ['link','offer','review','map','lead'].includes(b.type));
   const w = {delivery:.42,menu:.3,whatsapp:.14,pin:.1,calendar:.06,instagram:.05};
   s.daily.forEach(d => {
     const base = [.8,.55,.6,.65,.85,1.25,1.35][d.dow];
@@ -207,7 +218,7 @@ function demoStats(cfg, days) {
   });
   s.clickers = Math.round(s.views * .58);
   links.forEach(b => { const k = b.type==='offer'?.2:b.type==='review'?.03:b.type==='map'?.08:(w[b.icon]||.04); s.top[b.id] = {n:Math.round(s.clicks * k * (.9 + r()*.2))}; });
-  Object.assign(s.src, {Instagram:Math.round(s.views*.58),WhatsApp:Math.round(s.views*.17),Google:Math.round(s.views*.13),'QR Code':Math.round(s.views*.05),Direto:Math.round(s.views*.07)});
+  Object.assign(s.src, {Instagram:Math.round(s.views*.58),WhatsApp:Math.round(s.views*.17),Google:Math.round(s.views*.13),'QR Code':Math.round(s.views*.04),'Plaquinha NFC':Math.round(s.views*.03),Direto:Math.round(s.views*.05)});
   s.mobile = Math.round(s.views * .91); s.demo = true;
   return finalize(s, cfg);
 }
@@ -217,6 +228,7 @@ function classify(ref) {
   if (/src:wa|whatsapp|wa\.me/.test(x)) return 'WhatsApp';
   if (/src:google|google\./.test(x)) return 'Google';
   if (/src:qr/.test(x)) return 'QR Code';
+  if (/src:nfc/.test(x)) return 'Plaquinha NFC';
   return 'Direto';
 }
 function computeStats(rows, days, cfg) {
@@ -276,11 +288,25 @@ function buildConfig({name, slug, segment, whatsapp}) {
   cfg.meta = {shared:false, onboardingHidden:false};
   return cfg;
 }
+// ── Relatório (texto para WhatsApp) ──
+function reportText(s, cfg, days, leadsN) {
+  const name = cfg.profile?.name || 'Seu restaurante';
+  const L = ['*Relatório KLINKS · ' + name + '*', 'Últimos ' + days + ' dias', ''];
+  L.push('👀 Visitas na página: *' + s.views + '*');
+  L.push('👆 Cliques nos botões: *' + s.clicks + '* (' + s.ctr + '% das visitas clicaram)');
+  const top = (s.topList || []).filter(t => !t.gone).slice(0, 3);
+  if (top.length) { L.push('', '🏆 Mais clicados:'); top.forEach((t, i) => L.push((i + 1) + '. ' + t.label + ' · ' + t.n)); }
+  const src = (s.srcList || [])[0]; if (src && s.views) L.push('', '📍 Origem principal: ' + src.label + ' (' + Math.round(src.n / s.views * 100) + '%)');
+  if (s.peak) L.push('⏰ Horário de pico: ' + WEEK[s.peak.dow].toLowerCase() + ' por volta das ' + s.peak.hour + 'h');
+  if (leadsN) L.push('📲 Novos contatos de WhatsApp: *' + leadsN + '*');
+  L.push('', 'Painel completo: useklinks.com/entrar');
+  return L.join('\n');
+}
 // Venda única: todos os clientes têm tudo liberado.
 const ALL = {offers:99, days:[7,30,90]};
 const PLAN_LIMITS = {free:ALL, pro:ALL};
 
 window.KStudio = {THEMES,FONTS,FONTS_URL,LINK_PRESETS,BLOCK_TYPES,OFFER_TEMPLATES,WEEK,WEEK_S,DEFAULT,
   uid,newBlock,migrateLegacy,href,waLink,mapsLink,mapsEmbed,linkHref,socialLinks,resolveTheme,fontCss,presetFor,
-  statusNow,fmtH,offerState,steps,fetchStats,demoStats,SEGMENTS,buildConfig,PLAN_LIMITS};
+  statusNow,fmtH,offerState,daysLabel,reportText,steps,fetchStats,demoStats,SEGMENTS,buildConfig,PLAN_LIMITS};
 })();

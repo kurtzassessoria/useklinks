@@ -104,6 +104,142 @@ function StylePanel({
     })
   }));
 }
+function ReportCard({
+  s,
+  view,
+  days
+}) {
+  const K = window.KStudio;
+  const [leadsN, setLeadsN] = React.useState(0),
+    [copied, setCopied] = React.useState(false);
+  React.useEffect(() => {
+    window.KlinksBackend.engine.leads(s.cfg.slug).then(l => {
+      const t = Date.now() - days * 864e5;
+      setLeadsN((l || []).filter(x => Date.parse(x.created_at) >= t).length);
+    }).catch(() => {});
+  }, [days]);
+  const txt = K.reportText(view, s.cfg, days, leadsN);
+  const wa = String(s.cfg.social?.whatsapp || '').replace(/\D/g, '');
+  return React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-sec"
+  }, "Relat\xF3rio para o WhatsApp"), React.createElement("div", {
+    className: "st-card"
+  }, React.createElement("pre", {
+    className: "st-report"
+  }, txt.replace(/\*/g, '')), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      marginTop: 12
+    }
+  }, React.createElement("a", {
+    className: "st-btn sm pri",
+    style: {
+      textDecoration: 'none'
+    },
+    href: 'https://wa.me/' + (wa || '') + '?text=' + encodeURIComponent(txt),
+    target: "_blank",
+    rel: "noopener"
+  }, wa ? 'Enviar para o meu WhatsApp' : 'Enviar no WhatsApp'), React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => {
+      navigator.clipboard?.writeText(txt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }, copied ? 'Copiado!' : 'Copiar texto'))));
+}
+function LeadsCard({
+  s
+}) {
+  const B = window.KlinksBackend;
+  const [rows, setRows] = React.useState(null),
+    [all, setAll] = React.useState(false);
+  const load = () => B.engine.leads(s.cfg.slug).then(r => setRows(r || [])).catch(() => setRows([]));
+  React.useEffect(() => {
+    load();
+  }, [s.cfg.slug]);
+  const has = s.cfg.blocks.some(b => b.type === 'lead');
+  const fmtP = p => {
+    const d = String(p).replace(/^55/, '');
+    return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d;
+  };
+  const csv = () => {
+    const L = [['Nome', 'WhatsApp', 'Origem', 'Data'], ...rows.map(r => [r.name || '', r.phone, r.source || '', new Date(r.created_at).toLocaleString('pt-BR')])].map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(';')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + L], {
+      type: 'text/csv'
+    }));
+    a.download = `contatos-${s.cfg.slug}.csv`;
+    a.click();
+  };
+  return React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-sec"
+  }, React.createElement("span", null, 'Contatos' + (rows ? ' · ' + rows.length : ''))), React.createElement("div", {
+    className: "st-card"
+  }, !rows ? React.createElement("span", {
+    style: {
+      color: 'var(--s-mut)',
+      fontSize: 14
+    }
+  }, "Carregando\u2026") : !rows.length ? React.createElement("div", {
+    style: {
+      fontSize: 14,
+      lineHeight: 1.55
+    }
+  }, React.createElement("b", null, "Nenhum contato ainda."), React.createElement("p", {
+    style: {
+      color: 'var(--s-mut)',
+      margin: '4px 0 12px'
+    }
+  }, has ? 'Quando alguém pegar o cupom na sua página, o WhatsApp aparece aqui.' : 'Adicione o bloco “Cupom por WhatsApp” e comece a montar sua lista de clientes para mandar promoções.'), has ? null : React.createElement("button", {
+    className: "st-btn sm pri",
+    onClick: () => s.addBlock('lead')
+  }, "Adicionar bloco de cupom")) : React.createElement(React.Fragment, null, React.createElement("div", {
+    className: "st-leads"
+  }, (all ? rows : rows.slice(0, 8)).map(r => React.createElement("div", {
+    key: r.id,
+    className: "st-lead-r"
+  }, React.createElement("div", null, React.createElement("b", null, r.name || 'Sem nome'), React.createElement("span", null, fmtP(r.phone), " \xB7 ", new Date(r.created_at).toLocaleDateString('pt-BR'), r.source ? ' · ' + r.source : '')), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: 'https://wa.me/' + r.phone + '?text=' + encodeURIComponent('Oi' + (r.name ? ', ' + r.name.split(' ')[0] : '') + '! Aqui é da ' + s.cfg.profile.name + '.'),
+    target: "_blank",
+    rel: "noopener"
+  }, "WhatsApp"), React.createElement("button", {
+    className: "st-btn sm",
+    title: "Apagar contato",
+    onClick: async () => {
+      if (confirm('Apagar este contato?')) {
+        await B.engine.deleteLead(r.id);
+        load();
+      }
+    }
+  }, "\xD7")))), React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      flexWrap: 'wrap',
+      marginTop: 12
+    }
+  }, React.createElement("button", {
+    className: "st-btn sm pri",
+    onClick: csv
+  }, "Baixar planilha"), rows.length > 8 ? React.createElement("button", {
+    className: "st-btn sm",
+    onClick: () => setAll(!all)
+  }, all ? 'Ver menos' : 'Ver todos (' + rows.length + ')') : null), React.createElement("small", {
+    style: {
+      display: 'block',
+      marginTop: 12,
+      color: 'var(--s-mut)',
+      fontSize: 12
+    }
+  }, "Todos autorizaram receber ofertas. Se algu\xE9m pedir para sair, apague o contato."))));
+}
 const fmtN = n => n >= 10000 ? (n / 1000).toFixed(0) + 'K' : n >= 1000 ? (n / 1000).toFixed(1).replace('.', ',') + 'K' : String(n);
 function DataPanel({
   s
@@ -145,7 +281,7 @@ function DataPanel({
   }, React.createElement(SSeg, {
     options: [[7, '7 dias'], [30, '30 dias'], [90, '90 dias']],
     value: days,
-    onChange: v => s.limits.days.includes(v) ? setDays(v) : s.toast('Histórico de 90 dias é do plano Pro.')
+    onChange: setDays
   })), React.createElement("button", {
     className: "st-btn sm",
     onClick: () => setTick(t => t + 1)
@@ -201,7 +337,9 @@ function DataPanel({
   }, "Abrir minha p\xE1gina"), React.createElement("button", {
     className: "st-btn sm",
     onClick: () => setDemo(true)
-  }, "Ver exemplo com movimento"))));
+  }, "Ver exemplo com movimento"))), React.createElement(LeadsCard, {
+    s: s
+  }));
   const maxD = Math.max(...view.daily.map(d => d.views), 1);
   const maxT = Math.max(...view.topList.map(t => t.n), 1);
   const hours = Array.from({
@@ -241,7 +379,11 @@ function DataPanel({
     className: "st-kpi"
   }, React.createElement("span", null, "Taxa de clique"), React.createElement("b", null, view.ctr, "%"), React.createElement("small", null, "visitas que clicaram")), React.createElement("div", {
     className: "st-kpi"
-  }, React.createElement("span", null, "Celular"), React.createElement("b", null, view.mobilePct, "%"), React.createElement("small", null, "das visitas"))), ins.length ? React.createElement(React.Fragment, null, React.createElement("div", {
+  }, React.createElement("span", null, "Celular"), React.createElement("b", null, view.mobilePct, "%"), React.createElement("small", null, "das visitas"))), !demo ? React.createElement(ReportCard, {
+    s: s,
+    view: view,
+    days: days
+  }) : null, ins.length ? React.createElement(React.Fragment, null, React.createElement("div", {
     className: "st-sec"
   }, "O que fazer com isso"), React.createElement("div", {
     className: "st-ins"
@@ -347,7 +489,9 @@ function DataPanel({
     style: {
       opacity: .06 + view.heat[i][h] / maxH * .94
     }
-  })))))));
+  })))))), !demo ? React.createElement(LeadsCard, {
+    s: s
+  }) : null);
 }
 function SharePanel({
   s
@@ -362,7 +506,7 @@ function SharePanel({
     });
     setTimeout(() => setCopied(''), 1500);
   };
-  const chans = [['ig', 'Bio do Instagram', 'instagram', '#e1306c'], ['wa', 'Status e grupos do WhatsApp', 'whatsapp', '#22c55e'], ['google', 'Perfil no Google', 'star', '#f5b301'], ['qr', 'QR Code da mesa / embalagem', 'tag', '#64748b']];
+  const chans = [['ig', 'Bio do Instagram', 'instagram', '#e1306c'], ['wa', 'Status e grupos do WhatsApp', 'whatsapp', '#22c55e'], ['google', 'Perfil no Google', 'star', '#f5b301'], ['qr', 'QR Code da mesa / embalagem', 'tag', '#64748b'], ['nfc', 'Plaquinha NFC (gravar no chip)', 'phone', '#111827']];
   const withSrc = k => url + (url.includes('?') ? '&' : '?') + 'src=' + k;
   return React.createElement("div", {
     className: "st-col"
@@ -433,6 +577,40 @@ function SharePanel({
     target: "_blank",
     rel: "noopener"
   }, "Baixar QR"))))), React.createElement("div", {
+    className: "st-sec"
+  }, "Plaquinha, display de mesa e adesivos"), React.createElement("div", {
+    className: "st-card",
+    style: {
+      display: 'flex',
+      gap: 14,
+      alignItems: 'center',
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 220
+    }
+  }, React.createElement("b", {
+    style: {
+      fontSize: 15
+    }
+  }, "Arte pronta para imprimir"), React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: 'var(--s-mut)',
+      marginTop: 4,
+      lineHeight: 1.5
+    }
+  }, "Display de mesa, adesivo de embalagem e cart\xE3o, com o QR da sua p\xE1gina e o selo \u201Caproxime o celular\u201D. Imprima em casa ou mande o PDF para a gr\xE1fica.")), React.createElement("a", {
+    className: "st-btn sm pri",
+    style: {
+      textDecoration: 'none'
+    },
+    href: '/plaquinha?s=' + encodeURIComponent(s.cfg.slug),
+    target: "_blank",
+    rel: "noopener"
+  }, "Montar arte")), React.createElement("div", {
     className: "st-sec"
   }, "Um link para cada canal"), React.createElement("p", {
     className: "st-lead",

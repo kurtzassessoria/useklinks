@@ -8,7 +8,7 @@
    ───────────────────────────────────────────────────────────────────────── */
 (() => {
   const PROD_HOSTS = /(^|\.)useklinks\.com$/i;
-  const RESERVED = ['studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks'];
+  const RESERVED = ['studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks','plaquinha','relatorio'];
   const SLUG_RE = /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/;
   const timeout = (p, ms, msg) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg || 'O servidor demorou para responder.')), ms))]);
   const slugify = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, 'e').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
@@ -65,6 +65,9 @@
         if (error && /session_id/i.test(error.message)) { const { session_id, ...r } = row; ({ error } = await c.from('shortcut_clicks').insert(r)); }
         if (error) console.warn('[KLINKS] track', error.message);
       },
+      async saveLead(row) { const { error } = await timeout(c.from('leads').insert(row), T); if (error) throw new Error(traduz(error.message)); },
+      async leads(slug) { return await run(c.from('leads').select('id,name,phone,source,created_at').eq('restaurant_slug', slug).order('created_at', { ascending: false }).limit(5000)); },
+      async deleteLead(id) { await run(c.from('leads').delete().eq('id', id)); },
       async events(slug, sinceIso) { return await run(c.from('shortcut_clicks').select('event,label,referrer,user_agent,session_id,created_at').eq('restaurant_slug', slug).gte('created_at', sinceIso).order('created_at', { ascending: false }).limit(50000)); },
       async upload(file, slot, slug) {
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -115,6 +118,9 @@
       async setPlan(slug, plan) { const d = db(); if (d.restaurants[slug]) { d.restaurants[slug].plan = plan; save(d); } },
       async loadPublic(slug) { const r = db().restaurants[slug]; return r ? { slug, plan: r.plan, config: r.config } : null; },
       async track() { /* analytics.js já guarda localmente */ },
+      async saveLead(row) { await wait(); const k = 'klinks_local_leads'; let a = []; try { a = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) {} a.unshift({ ...row, id: 'l' + Date.now(), created_at: new Date().toISOString() }); localStorage.setItem(k, JSON.stringify(a.slice(0, 500))); },
+      async leads(slug) { try { return JSON.parse(localStorage.getItem('klinks_local_leads') || '[]').filter(l => l.restaurant_slug === slug); } catch (e) { return []; } },
+      async deleteLead(id) { const k = 'klinks_local_leads'; try { localStorage.setItem(k, JSON.stringify(JSON.parse(localStorage.getItem(k) || '[]').filter(l => l.id !== id))); } catch (e) {} },
       async events(slug, sinceIso) { const t = Date.parse(sinceIso); return (window.KlinksAnalytics ? window.KlinksAnalytics.events() : []).filter(e => e.slug === slug && e.ts >= t); },
       async upload(file) {
         if (file.size > 900 * 1024) throw new Error('No modo demonstração, use fotos de até 900 KB.');

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KLINKS · Plaquinha e adesivos</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0}body{background:#131210;color:#f4f2ef;font:15px/1.5 Manrope,system-ui,sans-serif}a{color:#ff7a45}a:hover{color:#fff}
+.ui{display:grid;grid-template-columns:320px minmax(0,1fr);min-height:100vh}
+@media(max-width:860px){.ui{grid-template-columns:minmax(0,1fr)}}
+.side{padding:24px;border-right:1px solid #ffffff14;display:flex;flex-direction:column;gap:18px}
+.side h1{font:800 22px/1.15 'Bricolage Grotesque',sans-serif;margin:0}
+.side p{margin:0;color:#a8a29c;font-size:13.5px}
+.f label{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8d8781;margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}.seg button{flex:1 1 auto;border:1px solid #ffffff1f;background:#1d1b19;color:#f4f2ef;border-radius:10px;padding:9px 10px;font:700 13px Manrope;cursor:pointer}.seg button.on{background:#ff4f12;border-color:#ff4f12;color:#fff}
+input[type=text]{width:100%;height:42px;border-radius:10px;border:1px solid #ffffff1f;background:#1d1b19;color:#f4f2ef;font:600 14px Manrope;padding:0 12px}
+.chk{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.go{height:48px;border:0;border-radius:12px;background:#ff4f12;color:#fff;font:800 15px Manrope;cursor:pointer}
+.tip{background:#1d1b19;border-radius:12px;padding:14px;font-size:13px;color:#cfc9c3;line-height:1.55}.tip b{color:#fff}
+.stage{padding:32px;display:grid;place-items:start center;overflow:auto;background:#2a2725}
+.sheet{background:#fff;box-shadow:0 20px 60px #0008}
+/* peças */
+.pc{--bg:#17110f;--ink:#fff4ea;--ac:#ff5a1f;color:var(--ink);font-family:Manrope,sans-serif;position:relative;overflow:hidden}
+.disp{width:100mm;height:150mm;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:9mm 8mm 6mm;text-align:center}
+.logo{width:20mm;height:20mm;border-radius:50%;background:center/cover var(--ac);display:grid;place-items:center;font:800 9mm/1 Manrope;color:var(--bg);border:1mm solid color-mix(in oklab,var(--ink) 20%,transparent)}
+.nm{font:800 6mm/1.1 'Bricolage Grotesque',sans-serif;margin:3mm 0 0;text-wrap:balance}
+.hl{font:800 8.6mm/1.02 'Bricolage Grotesque',sans-serif;margin:5mm 0 0;letter-spacing:-.01em;text-wrap:balance}
+.sub{font:600 3.4mm/1.35 Manrope;opacity:.8;margin-top:2mm;text-wrap:balance}
+.qrw{background:#fff;border-radius:4mm;padding:3mm;margin-top:5mm;position:relative}
+.qrw img{display:block;width:42mm;height:42mm}
+.nfc{display:flex;align-items:center;gap:2mm;margin-top:4.5mm;font:800 3.3mm/1 Manrope;letter-spacing:.04em;text-transform:uppercase;background:var(--ac);color:var(--bg);padding:2.2mm 3.6mm;border-radius:99mm}
+.nfc svg{width:4.6mm;height:4.6mm}
+.url{margin-top:auto;font:700 3.1mm/1 Manrope;opacity:.75}
+.mk{font:800 2.4mm/1 Manrope;letter-spacing:.14em;opacity:.45;margin-top:2mm}
+.grid{width:210mm;height:297mm;padding:10mm;display:grid;align-content:start;justify-content:center;gap:5mm}
+.grid.st{grid-template-columns:repeat(3,60mm)}
+.grid.cd{grid-template-columns:repeat(2,90mm)}
+.stk{width:60mm;height:60mm;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6mm;outline:.2mm dashed #bbb;outline-offset:1mm}
+.stk .qrw{margin:0;padding:1.6mm;border-radius:2.4mm}.stk .qrw img{width:27mm;height:27mm}
+.stk b{font:800 3.8mm/1 'Bricolage Grotesque',sans-serif}.stk span{font:700 2.4mm/1 Manrope;opacity:.75}
+.crd{width:90mm;height:50mm;background:var(--bg);display:flex;align-items:center;gap:5mm;padding:5mm 6mm;outline:.2mm dashed #bbb}
+.crd .qrw{margin:0;padding:1.8mm;border-radius:2.6mm;flex:none}.crd .qrw img{width:30mm;height:30mm}
+.crd .t{min-width:0;text-align:left}.crd .nm{font-size:4.4mm;margin:0}.crd .hl{font-size:5.6mm;margin:2mm 0 0}.crd .sub{font-size:2.7mm}
+.crd .nfc{margin-top:2.4mm;font-size:2.4mm;padding:1.4mm 2.4mm}.crd .nfc svg{width:3.2mm;height:3.2mm}
+@media print{
+  body{background:#fff}.side{display:none}.ui{display:block}.stage{padding:0;background:#fff;display:block}.sheet{box-shadow:none}
+  .pc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+<style id="pg"></style>
+</head><body>
+<div class="ui">
+<aside class="side">
+<div><h1>Plaquinha e adesivos</h1><p id="who">Carregando…</p></div>
+<div class="f"><label>Formato</label><div class="seg" id="fmt"><button data-v="disp" class="on">Display de mesa</button><button data-v="st">Adesivos</button><button data-v="cd">Cartões</button></div></div>
+<div class="f"><label>Chamada</label><input type="text" id="hl" value="Peça pelo celular" maxlength="40"></div>
+<div class="f"><label>Texto de apoio</label><input type="text" id="sub" value="Cardápio, promoções e WhatsApp em um toque" maxlength="60"></div>
+<div class="f"><label>Cores</label><div class="seg" id="col"><button data-v="page" class="on">Da página</button><button data-v="dark">Escuro</button><button data-v="light">Claro</button></div></div>
+<label class="chk"><input type="checkbox" id="nfc" checked>Mostrar “Aproxime o celular” (tem chip NFC)</label>
+<button class="go" onclick="print()">Imprimir / salvar PDF</button>
+<div class="tip"><b>Para a gráfica:</b> clique em Imprimir, escolha “Salvar como PDF”, deixe as margens em “Nenhuma” e envie o arquivo. Display: 10×15 cm. Adesivo: 6 cm, redondo. Cartão: 9×5 cm.</div>
+<div class="tip"><b>Chip NFC:</b> grave no chip o link que termina em <b>?src=nfc</b> (aba Compartilhar). O QR da arte já usa <b>?src=qr</b>, então a aba Dados separa quem veio de cada um.</div>
+</aside>
+<main class="stage"><div class="sheet" id="sheet"></div></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="klinks-backend.js"></script>
+<script src="studio-data.js"></script>
+<script>
+(async () => {
+  const B = window.KlinksBackend, K = window.KStudio;
+  const slug = new URLSearchParams(location.search).get('s') || '';
+  let cfg = null;
+  try { await B.init(); const r = slug && await B.engine.loadPublic(slug); if (r) cfg = { ...K.DEFAULT, ...(K.migrateLegacy(r.config) || {}), slug: r.slug }; } catch (e) { console.warn(e); }
+  const who = document.getElementById('who');
+  if (!cfg) { who.textContent = 'Página não encontrada. Publique sua página no Studio e abra esta tela pela aba Compartilhar.'; return; }
+  who.textContent = cfg.profile.name + ' · ' + B.prettyUrl(slug);
+  const st = { fmt: 'disp', col: 'page' };
+  const esc = (s) => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const qrUrl = B.shareUrl(slug) + (B.shareUrl(slug).includes('?') ? '&' : '?') + 'src=qr';
+  const qr = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&ecc=M&data=' + encodeURIComponent(qrUrl);
+  const NFC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 0 8M10 5.5a10 10 0 0 1 0 13M14 3a14 14 0 0 1 0 18"/></svg>';
+  function colors() {
+    const t = K.resolveTheme(cfg);
+    if (st.col === 'dark') return { bg: '#141210', ink: '#fff6ee', ac: t.accent && t.accent !== '#121212' ? t.accent : '#ff4f12' };
+    if (st.col === 'light') return { bg: '#ffffff', ink: '#141210', ac: t.accent && !/^#f/i.test(t.accent) ? t.accent : '#ff4f12' };
+    return { bg: t.bg, ink: t.ink, ac: t.accent };
+  }
+  function render() {
+    const c = colors(), p = cfg.profile, hl = esc(document.getElementById('hl').value), sub = esc(document.getElementById('sub').value), nfc = document.getElementById('nfc').checked;
+    const vars = `--bg:${c.bg};--ink:${c.ink};--ac:${c.ac}`;
+    const logo = `<div class="logo" style="${p.logo ? `background-image:url('${esc(p.logo)}')` : ''}">${p.logo ? '' : esc(p.logoLetter || (p.name || 'K')[0])}</div>`;
+    const q = `<div class="qrw"><img src="${qr}" alt="QR Code"></div>`;
+    const badge = nfc ? `<div class="nfc">${NFC}Aproxime o celular</div>` : '';
+    const sheet = document.getElementById('sheet'), pg = document.getElementById('pg');
+    if (st.fmt === 'disp') {
+      pg.textContent = '@page{size:100mm 150mm;margin:0}';
+      sheet.innerHTML = `<div class="pc disp" style="${vars}">${logo}<div class="nm">${esc(p.name)}</div><div class="hl">${hl}</div><div class="sub">${nfc ? 'Aponte a câmera ou aproxime o celular' : 'Aponte a câmera do celular'}${sub ? ' · ' + sub : ''}</div>${q}${badge}<div class="url">${esc(B.prettyUrl(slug))}</div><div class="mk">KLINKS</div></div>`;
+    } else if (st.fmt === 'st') {
+      pg.textContent = '@page{size:A4;margin:0}';
+      sheet.innerHTML = `<div class="grid st">${Array.from({ length: 12 }, () => `<div class="pc stk" style="${vars}"><b>${hl}</b>${q}<span>${nfc ? 'Câmera ou NFC' : 'Aponte a câmera'}</span></div>`).join('')}</div>`;
+    } else {
+      pg.textContent = '@page{size:A4;margin:0}';
+      sheet.innerHTML = `<div class="grid cd">${Array.from({ length: 10 }, () => `<div class="pc crd" style="${vars}">${q}<div class="t"><div class="nm">${esc(p.name)}</div><div class="hl">${hl}</div><div class="sub">${sub}</div>${badge}</div></div>`).join('')}</div>`;
+    }
+  }
+  const seg = (id, key) => document.getElementById(id).querySelectorAll('button').forEach(b => b.onclick = () => { st[key] = b.dataset.v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); render(); });
+  seg('fmt', 'fmt'); seg('col', 'col');
+  ['hl', 'sub', 'nfc'].forEach(id => document.getElementById(id).addEventListener('input', render));
+  render();
+})();
+</script>
+</body></html>

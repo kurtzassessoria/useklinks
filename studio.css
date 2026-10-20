@@ -245,3 +245,9 @@ button{font-family:inherit;color:inherit}
 [data-ui="light"] input[type=date],[data-ui="light"] input[type=time]{color-scheme:light!important}
 [data-ui="light"] .st-tg.on{background:var(--s-ok)}
 [data-ui="light"] .st-step.done .n{background:var(--s-ok);color:#06240f}
+.st-report{margin:0;white-space:pre-wrap;font:500 13.5px/1.6 'DM Sans',system-ui,sans-serif;color:var(--s-ink)}
+.st-leads{display:flex;flex-direction:column}
+.st-lead-r{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--s-line,#ffffff14)}
+.st-lead-r:first-child{border-top:0;padding-top:0}
+.st-lead-r>div{flex:1;min-width:0}.st-lead-r b{display:block;font-size:14px}
+.st-lead-r span{display:block;font-size:12.5px;color:var(--s-mut);margin-top:2px}

@@ -43,6 +43,124 @@ function BpIcon({
     d: BP_PATHS[n] || BP_PATHS.link
   }));
 }
+function BpLead({
+  b,
+  cfg,
+  preview,
+  track
+}) {
+  const K = window.KStudio;
+  const [name, setName] = React.useState(''),
+    [phone, setPhone] = React.useState(''),
+    [ok, setOk] = React.useState(false);
+  const [busy, setBusy] = React.useState(false),
+    [err, setErr] = React.useState(''),
+    [done, setDone] = React.useState(() => {
+      try {
+        return !!localStorage.getItem('klinks_lead_' + cfg.slug);
+      } catch (e) {
+        return false;
+      }
+    });
+  const [copied, setCopied] = React.useState(false);
+  const go = async e => {
+    e.preventDefault();
+    setErr('');
+    let d = phone.replace(/\D/g, '');
+    if (d.length < 10 || d.length > 13) return setErr('Digite o WhatsApp com DDD.');
+    if (d.length <= 11) d = '55' + d;
+    if (!ok) return setErr('Marque a autorização para receber o cupom.');
+    setBusy(true);
+    try {
+      if (!preview) {
+        let src = '';
+        try {
+          src = new URLSearchParams(location.search).get('src') || '';
+        } catch (x) {}
+        await window.KlinksBackend.engine.saveLead({
+          restaurant_slug: cfg.slug,
+          name: name.trim().slice(0, 60) || null,
+          phone: d,
+          source: src.slice(0, 30) || null,
+          consent: true
+        });
+        track('Cupom por WhatsApp · cadastro', null, b.id);
+      }
+      try {
+        localStorage.setItem('klinks_lead_' + cfg.slug, '1');
+      } catch (x) {}
+      setDone(true);
+    } catch (x) {
+      setErr('Não deu certo agora. Tente de novo em instantes.');
+    }
+    setBusy(false);
+  };
+  const h = K.href(b.url);
+  return React.createElement("div", {
+    className: "bp-card bp-lead"
+  }, React.createElement("div", {
+    className: "bp-lead-h"
+  }, React.createElement("span", {
+    className: "bp-tile",
+    style: {
+      background: '#22c55e'
+    }
+  }, React.createElement(BpIcon, {
+    n: "ticket",
+    size: 24
+  })), React.createElement("div", null, React.createElement("h3", null, b.title), b.desc && !done ? React.createElement("p", null, b.desc) : null)), done ? React.createElement(React.Fragment, null, React.createElement("button", {
+    className: "bp-coupon",
+    onClick: () => {
+      navigator.clipboard?.writeText(b.coupon);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    }
+  }, React.createElement("span", null, copied ? 'Cupom copiado!' : 'Seu cupom · toque para copiar'), React.createElement("code", null, b.coupon)), h ? React.createElement("a", {
+    className: "bp-cta",
+    href: h,
+    target: "_blank",
+    rel: "noopener",
+    onClick: () => track('Cupom por WhatsApp · usar', h, b.id + '-usar')
+  }, "Usar no pedido", React.createElement(BpIcon, {
+    n: "chevron",
+    size: 16,
+    sw: 2.2
+  })) : null) : React.createElement("form", {
+    onSubmit: go,
+    className: "bp-lead-f"
+  }, React.createElement("input", {
+    className: "bp-in",
+    placeholder: "Seu nome (opcional)",
+    value: name,
+    onChange: e => setName(e.target.value),
+    autoComplete: "given-name",
+    maxLength: 60
+  }), React.createElement("input", {
+    className: "bp-in",
+    placeholder: "WhatsApp com DDD",
+    value: phone,
+    onChange: e => setPhone(e.target.value),
+    inputMode: "tel",
+    autoComplete: "tel",
+    required: true
+  }), React.createElement("label", {
+    className: "bp-ok"
+  }, React.createElement("input", {
+    type: "checkbox",
+    checked: ok,
+    onChange: e => setOk(e.target.checked)
+  }), React.createElement("span", null, "Autorizo ", cfg.profile?.name || 'o restaurante', " a me enviar ofertas pelo WhatsApp. Posso cancelar quando quiser.")), err ? React.createElement("div", {
+    className: "bp-err"
+  }, err) : null, React.createElement("button", {
+    className: "bp-cta",
+    disabled: busy,
+    style: {
+      border: 0,
+      width: '100%',
+      cursor: 'pointer'
+    }
+  }, busy ? 'Enviando…' : b.cta || 'Quero meu cupom')));
+}
 function BioPage({
   cfg,
   preview
@@ -210,6 +328,77 @@ function BioPage({
         key: i,
         className: 'bp-hours-r' + (i === d ? ' today' : '')
       }, React.createElement("span", null, K.WEEK[i]), React.createElement("span", null, w.on ? `${K.fmtH(w.open)} – ${K.fmtH(w.close)}` : 'Fechado'))));
+    }
+    if (b.type === 'menu') {
+      const items = (b.items || []).filter(it => it.name);
+      if (!items.length) return preview ? React.createElement("div", {
+        key: b.id,
+        className: "bp-card bp-empty"
+      }, "Mais pedidos: adicione produtos") : null;
+      return React.createElement("div", {
+        key: b.id,
+        className: "bp-card bp-menu"
+      }, b.title ? React.createElement("div", {
+        className: "bp-menu-h"
+      }, b.title) : null, items.map(it => {
+        const h = K.href(it.url || b.url);
+        return React.createElement(A, {
+          key: it.id,
+          id: b.id + '-' + it.id,
+          h: h,
+          label: 'Mais pedidos · ' + it.name,
+          className: "bp-mi"
+        }, React.createElement("span", {
+          className: 'bp-mi-img' + (it.image ? '' : ' empty'),
+          style: it.image ? {
+            backgroundImage: `url(${it.image})`
+          } : null
+        }, it.image ? null : React.createElement(BpIcon, {
+          n: "menu",
+          size: 20
+        })), React.createElement("span", {
+          className: "bp-mi-t"
+        }, React.createElement("b", null, it.name), it.desc ? React.createElement("span", null, it.desc) : null), it.price ? React.createElement("span", {
+          className: "bp-mi-p"
+        }, "R$ ", it.price) : null);
+      }));
+    }
+    if (b.type === 'lead') return React.createElement(BpLead, {
+      key: b.id,
+      b: b,
+      cfg: cfg,
+      preview: preview,
+      track: track
+    });
+    if (b.type === 'review' && (b.rating || (b.quotes || []).some(x => x.text))) {
+      const h = K.href(b.url),
+        qs = (b.quotes || []).filter(x => x.text).slice(0, 3);
+      return React.createElement("div", {
+        key: b.id,
+        className: "bp-card bp-rev"
+      }, b.rating ? React.createElement("div", {
+        className: "bp-rev-h"
+      }, React.createElement("b", null, b.rating), React.createElement("div", null, React.createElement("span", {
+        className: "bp-stars"
+      }, [0, 1, 2, 3, 4].map(i => React.createElement(BpIcon, {
+        key: i,
+        n: "star",
+        size: 16,
+        fill: "currentColor",
+        sw: 0
+      }))), React.createElement("span", null, b.count ? b.count + ' avaliações no Google' : 'no Google'))) : null, qs.map((x, i) => React.createElement("blockquote", {
+        key: i
+      }, "\u201C", x.text, "\u201D", x.who ? React.createElement("cite", null, x.who) : null)), h ? React.createElement(A, {
+        h: h,
+        id: b.id,
+        label: b.label,
+        className: "bp-cta"
+      }, b.label || 'Avalie a gente', React.createElement(BpIcon, {
+        n: "star",
+        size: 16,
+        fill: "currentColor",
+        sw: 0
+      })) : null);
     }
     if (b.type === 'review') {
       const h = K.href(b.url);

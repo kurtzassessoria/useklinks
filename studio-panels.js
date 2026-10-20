@@ -16,9 +16,24 @@ function blockMeta(b, cfg) {
       icon: 'tag',
       color: '#ff5a1f',
       title: 'Oferta · ' + (b.title || 'sem título'),
-      sub: st.active ? (b.priceTo ? 'R$ ' + b.priceTo + ' · ' : '') + (st.label || 'Sem prazo') : 'Encerrada — não aparece na página'
+      sub: st.active ? (b.priceTo ? 'R$ ' + b.priceTo + ' · ' : '') + (st.label || 'Sem prazo') : st.scheduled ? 'Programada · aparece ' + K.daysLabel(b.days) : 'Encerrada — não aparece na página'
     };
   }
+  if (b.type === 'menu') {
+    const n = (b.items || []).filter(x => x.name).length;
+    return {
+      icon: 'menu',
+      color: '#7c3aed',
+      title: b.title || 'Mais pedidos',
+      sub: n ? n + (n === 1 ? ' produto' : ' produtos') : 'Adicione produtos'
+    };
+  }
+  if (b.type === 'lead') return {
+    icon: 'ticket',
+    color: '#22c55e',
+    title: 'Cupom por WhatsApp',
+    sub: (b.coupon || 'Sem cupom') + ' · contatos em Dados'
+  };
   if (b.type === 'map') return {
     icon: 'map',
     color: '#ea4335',
@@ -38,7 +53,7 @@ function blockMeta(b, cfg) {
     icon: 'star',
     color: '#f5b301',
     title: b.label,
-    sub: b.url ? 'Avaliações no Google' : 'Falta o link de avaliação'
+    sub: !b.url ? 'Falta o link de avaliação' : b.rating ? 'Nota ' + b.rating + (b.count ? ' · ' + b.count + ' avaliações' : '') : 'Avaliações no Google'
   };
   if (b.type === 'text') return {
     icon: 'text',
@@ -605,8 +620,27 @@ function BlockEditor({
       }),
       placeholder: "PIZZA10"
     })), React.createElement(SField, {
+      label: "Dias em que aparece",
+      hint: (b.days || []).length && b.days.length < 7 ? 'Aparece só ' + K.daysLabel(b.days) + '. Nos outros dias some sozinha.' : 'Todos os dias. Toque nos dias para programar (ex.: “Terça do hambúrguer”).'
+    }, React.createElement("div", {
+      className: "st-chips"
+    }, K.WEEK_S.map((w, i) => {
+      const ds = b.days && b.days.length ? b.days : [0, 1, 2, 3, 4, 5, 6];
+      const on = ds.includes(i);
+      return React.createElement("button", {
+        key: i,
+        className: 'st-chip' + (on && ds.length < 7 ? ' on' : ''),
+        onClick: () => {
+          let n = on ? ds.filter(x => x !== i) : [...ds, i];
+          if (ds.length === 7) n = [i];
+          set({
+            days: n.length && n.length < 7 ? n : []
+          });
+        }
+      }, w);
+    }))), React.createElement(SField, {
       label: "Termina em",
-      hint: st.active ? 'Depois dessa data a oferta some sozinha da página.' : 'Já encerrou — está escondida. Mude a data para voltar.'
+      hint: st.active || st.scheduled ? 'Depois dessa data a oferta some sozinha da página. Vazio = sem prazo.' : 'Já encerrou — está escondida. Mude a data para voltar.'
     }, React.createElement("input", {
       type: "date",
       className: "st-in",
@@ -759,22 +793,259 @@ function BlockEditor({
       }))
     })
   }, "Copiar o 1\xBA hor\xE1rio para todos os dias"));
-  if (b.type === 'review') body = React.createElement(React.Fragment, null, React.createElement(SField, {
+  if (b.type === 'review') {
+    const qs = [0, 1, 2].map(i => (b.quotes || [])[i] || {
+      text: '',
+      who: ''
+    });
+    const setQ = (i, x) => set({
+      quotes: qs.map((q, j) => j === i ? {
+        ...q,
+        ...x
+      } : q)
+    });
+    body = React.createElement(React.Fragment, null, React.createElement(SField, {
+      label: "Texto do bot\xE3o"
+    }, React.createElement(SInput, {
+      value: b.label,
+      onChange: v => set({
+        label: v
+      })
+    })), React.createElement(SField, {
+      label: "Link de avalia\xE7\xE3o do Google",
+      hint: "No Perfil da Empresa no Google: \u201CPedir avalia\xE7\xF5es\u201D \u2192 copiar link. Come\xE7a com g.page/r/\u2026"
+    }, React.createElement(SInput, {
+      value: b.url,
+      onChange: v => set({
+        url: v.trim()
+      }),
+      placeholder: "https://g.page/r/..."
+    })), React.createElement("div", {
+      className: "st-two"
+    }, React.createElement(SField, {
+      label: "Nota no Google",
+      hint: "Copie do Google. Vazio = s\xF3 o bot\xE3o."
+    }, React.createElement(SInput, {
+      value: b.rating,
+      onChange: v => set({
+        rating: v.replace(/[^\d,.]/g, '').replace('.', ',').slice(0, 3)
+      }),
+      placeholder: "4,9",
+      inputMode: "decimal"
+    })), React.createElement(SField, {
+      label: "N\xBA de avalia\xE7\xF5es"
+    }, React.createElement(SInput, {
+      value: b.count,
+      onChange: v => set({
+        count: v.replace(/\D/g, '')
+      }),
+      placeholder: "312",
+      inputMode: "numeric"
+    }))), React.createElement("div", {
+      className: "st-sec"
+    }, "Depoimentos (at\xE9 3)"), React.createElement("p", {
+      className: "st-lead",
+      style: {
+        marginTop: -4
+      }
+    }, "Copie avalia\xE7\xF5es reais do seu Google. Prova social perto do bot\xE3o de pedido aumenta os cliques."), qs.map((q, i) => React.createElement("div", {
+      key: i,
+      className: "st-two"
+    }, React.createElement(SField, {
+      label: 'Depoimento ' + (i + 1)
+    }, React.createElement(SText, {
+      value: q.text,
+      onChange: v => setQ(i, {
+        text: v
+      }),
+      maxLength: 160,
+      style: {
+        minHeight: 60
+      },
+      placeholder: "Melhor pizza da cidade, chegou quentinha!"
+    })), React.createElement(SField, {
+      label: "Nome"
+    }, React.createElement(SInput, {
+      value: q.who,
+      onChange: v => setQ(i, {
+        who: v
+      }),
+      maxLength: 30,
+      placeholder: "Ana P."
+    })))));
+  }
+  if (b.type === 'menu') {
+    const its = b.items || [];
+    const setI = (iid, x) => set({
+      items: its.map(it => it.id === iid ? {
+        ...it,
+        ...x
+      } : it)
+    });
+    body = React.createElement(React.Fragment, null, React.createElement(SField, {
+      label: "T\xEDtulo do bloco"
+    }, React.createElement(SInput, {
+      value: b.title,
+      onChange: v => set({
+        title: v
+      }),
+      maxLength: 30,
+      placeholder: "Mais pedidos"
+    })), React.createElement(SField, {
+      label: "Link padr\xE3o",
+      hint: "Para onde vai quem toca num produto (seu card\xE1pio digital). Cada produto pode ter um link pr\xF3prio."
+    }, React.createElement(SInput, {
+      value: b.url,
+      onChange: v => set({
+        url: v.trim()
+      }),
+      placeholder: "https://",
+      inputMode: "url"
+    })), its.map((it, i) => React.createElement("div", {
+      key: it.id,
+      className: "st-card",
+      style: {
+        marginBottom: 10
+      }
+    }, React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: 10
+      }
+    }, React.createElement("b", {
+      style: {
+        flex: 1
+      }
+    }, "Produto ", i + 1), i > 0 ? React.createElement("button", {
+      className: "st-btn sm",
+      onClick: () => {
+        const n = [...its];
+        [n[i - 1], n[i]] = [n[i], n[i - 1]];
+        set({
+          items: n
+        });
+      }
+    }, "Subir") : null, React.createElement("button", {
+      className: "st-btn sm danger",
+      style: {
+        marginLeft: 6
+      },
+      onClick: () => set({
+        items: its.filter(x => x.id !== it.id)
+      })
+    }, "Remover")), React.createElement(SField, {
+      label: "Foto"
+    }, React.createElement(SImage, {
+      value: it.image,
+      onChange: v => setI(it.id, {
+        image: v
+      }),
+      slot: 'menu-' + it.id,
+      slug: s.cfg.slug,
+      shape: "round"
+    })), React.createElement("div", {
+      className: "st-two"
+    }, React.createElement(SField, {
+      label: "Nome"
+    }, React.createElement(SInput, {
+      value: it.name,
+      onChange: v => setI(it.id, {
+        name: v
+      }),
+      maxLength: 40
+    })), React.createElement(SField, {
+      label: "Pre\xE7o (R$)"
+    }, React.createElement(SInput, {
+      value: it.price,
+      onChange: v => setI(it.id, {
+        price: v
+      }),
+      inputMode: "decimal",
+      placeholder: "49,90"
+    }))), React.createElement(SField, {
+      label: "Descri\xE7\xE3o curta (opcional)"
+    }, React.createElement(SInput, {
+      value: it.desc,
+      onChange: v => setI(it.id, {
+        desc: v
+      }),
+      maxLength: 70
+    })), React.createElement(SField, {
+      label: "Link pr\xF3prio (opcional)"
+    }, React.createElement(SInput, {
+      value: it.url,
+      onChange: v => setI(it.id, {
+        url: v.trim()
+      }),
+      placeholder: "Link do produto no card\xE1pio",
+      inputMode: "url"
+    })))), its.length < 6 ? React.createElement("button", {
+      className: "st-btn sm",
+      onClick: () => set({
+        items: [...its, {
+          id: K.uid(),
+          name: '',
+          desc: '',
+          price: '',
+          image: '',
+          url: ''
+        }]
+      })
+    }, "+ Adicionar produto") : React.createElement("p", {
+      className: "st-lead"
+    }, "M\xE1ximo de 6 produtos. Menos \xE9 mais: 3 campe\xF5es vendem melhor."));
+  }
+  if (b.type === 'lead') body = React.createElement(React.Fragment, null, React.createElement("p", {
+    className: "st-lead",
+    style: {
+      marginTop: -10
+    }
+  }, "O cliente deixa o WhatsApp e recebe o cupom na hora. Os contatos ficam em ", React.createElement("b", null, "Dados \u2192 Contatos"), ", prontos para voc\xEA mandar promo\xE7\xF5es. Ele marca a autoriza\xE7\xE3o (LGPD) antes de enviar."), React.createElement(SField, {
+    label: "T\xEDtulo"
+  }, React.createElement(SInput, {
+    value: b.title,
+    onChange: v => set({
+      title: v
+    }),
+    maxLength: 50
+  })), React.createElement(SField, {
     label: "Texto"
   }, React.createElement(SInput, {
-    value: b.label,
+    value: b.desc,
     onChange: v => set({
-      label: v
-    })
+      desc: v
+    }),
+    maxLength: 90
+  })), React.createElement("div", {
+    className: "st-two"
+  }, React.createElement(SField, {
+    label: "Cupom",
+    hint: "Crie o mesmo cupom no seu card\xE1pio digital."
+  }, React.createElement(SInput, {
+    value: b.coupon,
+    onChange: v => set({
+      coupon: v.toUpperCase().replace(/\s/g, '')
+    }),
+    placeholder: "BEMVINDO10"
   })), React.createElement(SField, {
-    label: "Link de avalia\xE7\xE3o do Google",
-    hint: "No Perfil da Empresa no Google: \u201CPedir avalia\xE7\xF5es\u201D \u2192 copiar link. Come\xE7a com g.page/r/\u2026"
+    label: "Texto do bot\xE3o"
+  }, React.createElement(SInput, {
+    value: b.cta,
+    onChange: v => set({
+      cta: v
+    }),
+    maxLength: 24
+  }))), React.createElement(SField, {
+    label: "Link para usar o cupom",
+    hint: "Depois de ganhar o cupom, aparece o bot\xE3o \u201CUsar no pedido\u201D."
   }, React.createElement(SInput, {
     value: b.url,
     onChange: v => set({
       url: v.trim()
     }),
-    placeholder: "https://g.page/r/..."
+    placeholder: "Link do seu card\xE1pio digital",
+    inputMode: "url"
   })));
   if (b.type === 'text') body = React.createElement(React.Fragment, null, React.createElement(SField, {
     label: "T\xEDtulo (opcional)"

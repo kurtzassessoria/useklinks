@@ -70,7 +70,7 @@ grant select on public.public_pages to anon, authenticated;
 create or replace function public.slug_available(p_slug text) returns boolean
 language sql security definer set search_path = public stable as $$
   select p_slug ~ '^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$'
-     and p_slug not in ('studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks')
+     and p_slug not in ('studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks','plaquinha','relatorio')
      and not exists (select 1 from restaurants where slug = p_slug);
 $$;
 grant execute on function public.slug_available(text) to anon, authenticated;
@@ -122,6 +122,28 @@ create policy "visitante grava evento" on public.shortcut_clicks for insert to a
               and length(event) <= 60 and coalesce(length(label),0) <= 200 and coalesce(length(href),0) <= 2000);
 -- Só o dono lê os dados do próprio restaurante.
 create policy "dono le eventos" on public.shortcut_clicks for select to authenticated
+  using (exists (select 1 from public.restaurants r where r.slug = restaurant_slug and r.owner_id = auth.uid()));
+
+-- 3b) CONTATOS (bloco "Cupom por WhatsApp") ──────────────────────────────
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  restaurant_slug text not null,
+  name text, phone text not null, source text,
+  consent boolean not null default false,
+  created_at timestamptz default now()
+);
+create index if not exists leads_slug_idx on public.leads (restaurant_slug, created_at desc);
+alter table public.leads enable row level security;
+drop policy if exists "visitante deixa contato" on public.leads;
+drop policy if exists "dono le contatos" on public.leads;
+drop policy if exists "dono apaga contatos" on public.leads;
+-- Visitante só grava com consentimento (LGPD), em página existente e com campos curtos.
+create policy "visitante deixa contato" on public.leads for insert to anon, authenticated
+  with check (consent = true and restaurant_slug in (select slug from public.public_pages)
+              and length(phone) between 10 and 15 and coalesce(length(name),0) <= 60 and coalesce(length(source),0) <= 30);
+create policy "dono le contatos" on public.leads for select to authenticated
+  using (exists (select 1 from public.restaurants r where r.slug = restaurant_slug and r.owner_id = auth.uid()));
+create policy "dono apaga contatos" on public.leads for delete to authenticated
   using (exists (select 1 from public.restaurants r where r.slug = restaurant_slug and r.owner_id = auth.uid()));
 
 -- 4) STORAGE (fotos) ──────────────────────────────────────────────────────
