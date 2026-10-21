@@ -33,5 +33,12 @@ window.KLINKS_PUBLIC_BASE       = 'https://useklinks.com';
 window.KLINKS_UPGRADE_URL       = '';
 /* WhatsApp comercial da Kurtz (só números, com 55). Usado se não houver checkout. */
 window.KLINKS_SALES_WHATSAPP    = '';
+/* Links de checkout da Cakto, um por plano (página /planos).
+   Sem link, o botão abre o WhatsApp comercial com o plano escolhido. */
+window.KLINKS_CHECKOUT = {
+  mensal:     '',
+  trimestral: '',
+  anual:      '',
+};
 /* Página real mostrada como exemplo na tela de cadastro (precisa estar publicada). */
 window.KLINKS_SHOWCASE_SLUG     = 'pinerolo';

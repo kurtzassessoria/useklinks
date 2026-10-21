@@ -8,7 +8,7 @@
    ───────────────────────────────────────────────────────────────────────── */
 (() => {
   const PROD_HOSTS = /(^|\.)useklinks\.com$/i;
-  const RESERVED = ['studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks','plaquinha','relatorio'];
+  const RESERVED = ['studio','cadastro','entrar','pagina','api','admin','app','login','assets','www','blog','ajuda','planos','precos','termos','privacidade','kurtz','klinks','plaquinha','relatorio','obrigado'];
   const SLUG_RE = /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/;
   const timeout = (p, ms, msg) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg || 'O servidor demorou para responder.')), ms))]);
   const slugify = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, 'e').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
@@ -21,6 +21,7 @@
     if (m.includes('reauthentication') || m.includes('session missing') || m.includes('jwt')) return 'Sua sessão expirou. Entre de novo e tente outra vez.';
     if (m.includes('invalid login')) return 'E-mail ou senha incorretos.';
     if (m.includes('already registered') || m.includes('already been registered')) return 'Esse e-mail já tem conta. Use “Entrar”.';
+    if (m.includes('invalid_code')) return 'Código de acesso inválido ou já usado.';
     if (m.includes('slug_taken')) return 'Esse endereço acabou de ser usado. Escolha outro.';
     if (m.includes('already_has_restaurant')) return 'Sua conta já tem uma página.';
     if (m.includes('email not confirmed')) return 'Confirme seu e-mail pelo link que enviamos e depois entre.';
@@ -58,7 +59,12 @@
         const rows = await run(c.from('restaurants').select('slug,plan,plan_until,config').limit(1));
         return rows && rows[0] || null;
       },
-      async createRestaurant(slug, config) { await run(c.rpc('create_my_restaurant', { p_slug: slug, p_config: config })); return { slug, plan: 'free', config }; },
+      async codeCheck(code) { return await run(c.rpc('code_check', { p_code: code })); },
+      async createRestaurant(slug, config, code) { await run(c.rpc('create_my_restaurant', { p_slug: slug, p_config: config, p_code: code || '' })); return { slug, plan: 'pro', config }; },
+      async adminCodes() { return await run(c.rpc('admin_list_codes')) || []; },
+      async adminNewCode(plan, kurtz, note) { return await run(c.rpc('admin_new_code', { p_plan: plan, p_kurtz: !!kurtz, p_note: note || '' })); },
+      async adminDeleteCode(code) { await run(c.rpc('admin_delete_code', { p_code: code })); },
+      async adminExtend(slug, plan) { return await run(c.rpc('admin_extend', { p_slug: slug, p_plan: plan })); },
       async saveConfig(slug, config) { const { plan, ...clean } = config; await run(c.from('restaurants').update({ config: clean }).eq('slug', slug)); },
       async loadPublic(slug) { const rows = await run(c.from('public_pages').select('slug,plan,config').eq('slug', slug).limit(1)); return rows && rows[0] || null; },
       async track(row) {
@@ -116,18 +122,25 @@
       async signOutAll() { const d = db(); d.session = null; save(d); },
       async slugAvailable(s) { await wait(150); return validSlug(s) && !db().restaurants[s]; },
       async myRestaurant() { const d = db(); const u = d.session && d.users[d.session]; if (!u) return null; if (!Object.values(d.restaurants).some(v => v.owner === u.id)) { const inv = Object.values(d.restaurants).find(v => !v.owner && v.ownerEmail === d.session); if (inv) { inv.owner = u.id; save(d); } } const r = Object.entries(d.restaurants).find(([, v]) => v.owner === u.id); return r ? { slug: r[0], plan: r[1].plan, config: r[1].config } : null; },
-      async createRestaurant(slug, config) {
+      async codeCheck(code) { await wait(150); const k = (db().codes || {})[String(code || '').trim().toUpperCase()]; return k && !k.used ? k.plan : null; },
+      async adminCodes() { const d = db(); return Object.entries(d.codes || {}).map(([code, v]) => ({ code, plan: v.plan, kurtz: v.kurtz, note: v.note, used_slug: v.used || null, used_at: v.usedAt || null, created_at: v.at })).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+      async adminNewCode(plan, kurtz, note) { const d = db(); d.codes = d.codes || {}; const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let c = 'KL-'; for (let i = 0; i < 8; i++) { c += abc[Math.floor(Math.random() * abc.length)]; if (i === 3) c += '-'; } d.codes[c] = { plan, kurtz: !!kurtz, note, at: new Date().toISOString() }; save(d); return c; },
+      async adminDeleteCode(code) { const d = db(); if (d.codes && d.codes[code] && !d.codes[code].used) { delete d.codes[code]; save(d); } },
+      async adminExtend(slug, plan) { const d = db(), r = d.restaurants[slug]; if (!r) return null; const add = { anual: 365, trimestral: 92 }[plan] || 31; const base = Math.max(Date.now(), r.until ? Date.parse(r.until) : 0); r.until = new Date(base + add * 864e5).toISOString(); save(d); return r.until; },
+      async createRestaurant(slug, config, code) {
         await wait(); const d = db(); const u = d.users[d.session]; if (!u) throw new Error('Entre na sua conta.');
+        const ck = (d.codes || {})[String(code || '').trim().toUpperCase()]; if (!ck || ck.used) throw new Error(traduz('invalid_code'));
         if (Object.values(d.restaurants).some(v => v.owner === u.id)) throw new Error(traduz('already_has_restaurant'));
         if (!validSlug(slug) || d.restaurants[slug]) throw new Error(traduz('slug_taken'));
-        d.restaurants[slug] = { owner: u.id, plan: 'free', config }; save(d); return { slug, plan: 'free', config };
+        const add = { anual: 365, trimestral: 92 }[ck.plan] || 31; ck.used = slug; ck.usedAt = new Date().toISOString();
+        d.restaurants[slug] = { owner: u.id, plan: 'pro', until: new Date(Date.now() + add * 864e5).toISOString(), config }; save(d); return { slug, plan: 'pro', config };
       },
       async saveConfig(slug, config) { const d = db(); if (!d.restaurants[slug]) throw new Error('Página não encontrada.'); const { plan, ...clean } = config; d.restaurants[slug].config = clean; save(d); },
       async setPlan(slug, plan) { const d = db(); if (d.restaurants[slug]) { d.restaurants[slug].plan = plan; save(d); } },
       async loadPublic(slug) { const r = db().restaurants[slug]; return r ? { slug, plan: r.plan, config: r.config } : null; },
       async track() { /* analytics.js já guarda localmente */ },
       async isAdmin() { return true; },
-      async adminList() { const d = db(); return Object.entries(d.restaurants).map(([slug, v]) => ({ slug, owner_email: v.ownerEmail || Object.keys(d.users).find(e => d.users[e].id === v.owner) || '', claimed: !!v.owner, name: v.config?.profile?.name || slug })); },
+      async adminList() { const d = db(); return Object.entries(d.restaurants).map(([slug, v]) => ({ slug, owner_email: v.ownerEmail || Object.keys(d.users).find(e => d.users[e].id === v.owner) || '', claimed: !!v.owner, name: v.config?.profile?.name || slug, plan_until: v.until || null })); },
       async adminCreate(slug, email, config) { await wait(); const d = db(); if (!validSlug(slug) || d.restaurants[slug]) throw new Error(traduz('slug_taken')); d.restaurants[slug] = { owner: null, ownerEmail: (email || '').toLowerCase(), plan: 'pro', config }; save(d); },
       async adminLoad(slug) { const d = db(), v = d.restaurants[slug]; return v ? { slug, owner_email: v.ownerEmail || '', claimed: !!v.owner, config: v.config } : null; },
       async adminSave(slug, config) { const d = db(); if (!d.restaurants[slug]) throw new Error('Página não encontrada.'); const { plan, ...clean } = config; d.restaurants[slug].config = clean; save(d); },

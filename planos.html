@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KLINKS · O link da bio que faz o cliente pedir</title>
+<meta name="description" content="Página de link na bio feita para delivery e restaurante: aberto agora, promoção do dia, mais pedidos, cupom por WhatsApp e dados de cliques. A partir de R$ 23,32/mês.">
+<meta property="og:title" content="KLINKS · O link da bio que faz o cliente pedir"><meta property="og:image" content="https://useklinks.com/icon-512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#121212;--ink2:#3d3d3d;--mut:#6b6b6b;--line:#e4ddd6;--or:#e8590c;--or2:#ff6a1f;--cream:#f6f1ec}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.55 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--or)}a:hover{color:var(--ink)}
+.w{max-width:1120px;margin:0 auto;padding:0 22px}
+.H{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.005em;line-height:.98;margin:0;text-wrap:balance}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:14px;font:800 15px Manrope;text-decoration:none;border:0;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-1px)}.btn.or{background:var(--or);color:#fff}.btn.or:hover{background:var(--or2);color:#fff}
+.btn.gh{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}.btn.gh:hover{color:inherit;opacity:.8}
+.btn.dk{background:var(--ink);color:#fff}.btn.dk:hover{color:#fff;background:#2a2a2a}
+.kick{display:inline-block;font:800 12px Manrope;letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
+/* topo */
+.top{position:sticky;top:0;z-index:5;background:#121212f2;backdrop-filter:blur(8px);color:#fff}
+.top .w{display:flex;align-items:center;gap:14px;height:64px}
+.lg{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font:400 22px Anton;letter-spacing:.04em}.lg:hover{color:#fff}.lg img{width:32px;height:32px;border-radius:8px}
+.top nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+.top nav a{color:#ddd;text-decoration:none;font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px}.top nav a:hover{color:#fff;background:#ffffff14}
+.top nav .btn{height:40px;padding:0 16px;font-size:14px;color:#fff}
+@media(max-width:640px){.top nav .hide{display:none}}
+/* hero */
+.hero{background:var(--ink);color:#fff;overflow:hidden}
+.hero .w{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;padding-top:56px;padding-bottom:64px}
+@media(max-width:880px){.hero .w{grid-template-columns:minmax(0,1fr);padding-top:36px}}
+.hero h1{font-size:clamp(46px,7vw,92px)}.hero h1 em{font-style:normal;color:var(--or2)}
+.hero p{font-size:clamp(16px,1.6vw,19px);color:#cfcfcf;max-width:540px;margin:22px 0 28px;text-wrap:pretty}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.proof{display:flex;gap:18px;flex-wrap:wrap;margin-top:28px;font-size:13.5px;color:#aaa;font-weight:600}.proof b{color:#fff}
+.phone{justify-self:center;position:relative;width:min(340px,86vw);aspect-ratio:9/19;border-radius:44px;background:#000;padding:10px;box-shadow:0 0 0 1px #ffffff22,0 40px 90px #000c,0 0 120px #e8590c33}
+.phone iframe{width:100%;height:100%;border:0;border-radius:35px;background:#111;display:block}
+.phone .tag{position:absolute;left:50%;top:-14px;transform:translateX(-50%);white-space:nowrap;background:var(--or);color:#fff;font:800 11px Manrope;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;border-radius:99px}
+/* seções */
+section{padding:80px 0}@media(max-width:640px){section{padding:56px 0}}
+.sh{max-width:720px;margin-bottom:36px}.sh h2{font-size:clamp(34px,4.6vw,56px);margin-top:10px}.sh p{color:var(--ink2);font-size:17px;margin:14px 0 0;text-wrap:pretty}
+.cmp{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 1px 0 var(--line)}
+.cmp table{width:100%;border-collapse:collapse;font-size:15px}
+.cmp th,.cmp td{padding:15px 18px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp th{font:800 12px Manrope;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);background:#faf7f4}
+.cmp th:last-child{color:var(--or)}.cmp td:last-child{background:#fff7f1;font-weight:700}
+.cmp tr:last-child td{border-bottom:0}
+.y{color:#15803d;font-weight:800}.n{color:#9a9a9a}
+@media(max-width:640px){.cmp th,.cmp td{padding:12px 10px;font-size:13.5px}}
+.feat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:880px){.feat{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.feat{grid-template-columns:minmax(0,1fr)}}
+.ft{background:#fff;border-radius:20px;padding:24px}.ft i{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--ink);color:var(--or2);margin-bottom:16px}
+.ft h3{font:800 18px/1.25 Manrope;margin:0 0 6px}.ft p{margin:0;color:var(--ink2);font-size:14.5px}
+/* planos */
+.plans{background:var(--ink);color:#fff}.plans .sh p{color:#cfcfcf}
+.setup{display:flex;align-items:center;gap:14px;background:#1d1d1d;border-radius:16px;padding:14px 18px;margin-bottom:18px;cursor:pointer;user-select:none;max-width:640px}
+.setup input{width:22px;height:22px;accent-color:var(--or);flex:none}.setup b{display:block;font-size:15.5px}.setup span{font-size:13.5px;color:#bdbdbd}
+.pg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+@media(max-width:880px){.pg{grid-template-columns:minmax(0,1fr);max-width:460px}}
+.pc{background:#1b1b1b;border-radius:24px;padding:28px 24px;display:flex;flex-direction:column;position:relative;box-shadow:inset 0 0 0 1px #ffffff14}
+.pc.hi{background:#fff;color:var(--ink);box-shadow:0 0 0 3px var(--or),0 30px 70px #e8590c40}
+.pc .badge{position:absolute;top:-13px;left:24px;background:var(--or);color:#fff;font:800 11px Manrope;letter-spacing:.1em;text-transform:uppercase;padding:6px 11px;border-radius:99px}
+.pc h3{font:400 26px Anton;text-transform:uppercase;letter-spacing:.02em;margin:0}
+.pc .pr{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;margin:16px 0 2px}.pc .pr b{font:400 clamp(36px,4.4vw,52px)/1 Anton;white-space:nowrap}.pc .pr small{font-size:15px;font-weight:700;opacity:.7}
+.pc .eq{font-size:14px;font-weight:700;color:var(--or2);min-height:22px}.pc.hi .eq{color:var(--or)}
+.pc .sv{font-size:13px;opacity:.7;min-height:20px}
+.pc .su{font-size:13px;font-weight:700;margin-top:8px;opacity:.85;min-height:20px}
+.pc ul{list-style:none;padding:0;margin:20px 0 24px;display:flex;flex-direction:column;gap:9px;font-size:14.5px}
+.pc li{display:flex;gap:9px}.pc li:before{content:"";flex:none;width:18px;height:18px;margin-top:2px;border-radius:50%;background:var(--or) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+.pc .btn{margin-top:auto;width:100%}
+.pc:not(.hi) .btn.or{background:#fff;color:var(--ink)}.pc:not(.hi) .btn.or:hover{background:var(--or);color:#fff}
+.fine{margin-top:20px;font-size:13.5px;color:#a9a9a9}
+/* passos */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+@media(max-width:780px){.steps{grid-template-columns:minmax(0,1fr)}}
+.st{background:#fff;border-radius:20px;padding:24px;counter-increment:s}.st:before{content:counter(s,decimal-leading-zero);font:400 40px/1 Anton;color:var(--or)}
+.st h3{font:800 18px Manrope;margin:12px 0 6px}.st p{margin:0;color:var(--ink2);font-size:14.5px}
+/* faq */
+.faq{max-width:780px}.faq details{background:#fff;border-radius:16px;margin-bottom:10px;padding:0 20px}
+.faq summary{cursor:pointer;list-style:none;padding:18px 0;font-weight:800;font-size:16px;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";font:400 24px/1 Anton;color:var(--or)}
+.faq details[open] summary:after{content:"–"}.faq details p{margin:0 0 18px;color:var(--ink2);font-size:15px}
+.end{background:var(--or);color:#fff;text-align:center}
+.end h2{font-size:clamp(38px,5.6vw,72px)}.end p{font-size:17px;margin:14px auto 26px;max-width:560px;color:#fff}
+.end .btn.dk{height:56px}
+footer{background:var(--ink);color:#9a9a9a;font-size:13px;padding:26px 0}
+footer .w{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}footer a{color:#cfcfcf}footer a:hover{color:#fff}
+</style></head>
+<body>
+<header class="top"><div class="w">
+<a class="lg" href="/planos"><img src="/icon-512.png" alt="">KLINKS</a>
+<nav><a class="hide" href="#como">Como funciona</a><a class="hide" href="#planos">Planos</a><a href="/entrar">Entrar</a><a class="btn or" href="#planos">Assinar</a></nav>
+</div></header>
+
+<div class="hero"><div class="w">
+<div>
+<span class="kick">Link na bio para delivery</span>
+<h1 class="H" style="margin-top:14px">O link da bio que faz o cliente <em>pedir.</em></h1>
+<p>Uma página feita para restaurante e delivery. Mostra se você está aberto, a promoção do dia e os mais pedidos, e leva direto para o pedido. Você ainda vê quem clicou em cada botão.</p>
+<div class="ctas"><a class="btn or" href="#planos">Ver planos</a><a class="btn gh" id="demo" href="#" target="_blank" rel="noopener">Ver página real</a></div>
+<div class="proof"><span><b>Pronta em 2 minutos</b></span><span><b>Sem fidelidade</b></span><span>Feito pela <b>Assessoria Kurtz</b></span></div>
+</div>
+<div class="phone"><span class="tag">Cliente real</span><iframe id="frame" title="Exemplo de página KLINKS" loading="lazy"></iframe></div>
+</div></div>
+
+<section><div class="w">
+<div class="sh"><span class="kick">Por que não um link grátis?</span><h2 class="H">Link genérico mostra links. O KLINKS vende.</h2><p>Linktree e bio.site servem para qualquer perfil. O KLINKS foi feito para quem vive de pedido.</p></div>
+<div class="cmp"><table>
+<thead><tr><th></th><th>Link genérico</th><th>KLINKS</th></tr></thead>
+<tbody>
+<tr><td>“Aberto agora / Fecha às 23h” automático</td><td class="n">Não</td><td><span class="y">Sim</span></td></tr>
+<tr><td>Promoção que aparece só no dia certo e some sozinha</td><td class="n">Não</td><td><span class="y">Sim</span></td></tr>
+<tr><td>Mais pedidos com foto e preço</td><td class="n">Não</td><td><span class="y">Sim</span></td></tr>
+<tr><td>Cupom que vira lista de WhatsApp dos clientes</td><td class="n">Não</td><td><span class="y">Sim</span></td></tr>
+<tr><td>Nota e depoimentos do Google</td><td class="n">Não</td><td><span class="y">Sim</span></td></tr>
+<tr><td>Saber de onde veio cada clique (Instagram, QR da mesa, plaquinha)</td><td class="n">Pago e em inglês</td><td><span class="y">Sim, em português</span></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section style="padding-top:0"><div class="w">
+<div class="sh"><span class="kick">Tudo incluso em todos os planos</span><h2 class="H">Feito para quem vende comida.</h2></div>
+<div class="feat">
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></i><h3>Aberto agora</h3><p>Pelo seu horário, a página mostra se está aberto e quando fecha. Ninguém liga à toa.</p></div>
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"></path><circle cx="7" cy="7" r="1.5"></circle></svg></i><h3>Ofertas programadas</h3><p>“Terça do hambúrguer”: aparece só na terça e some sozinha. Com prazo e contagem.</p></div>
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"></path></svg></i><h3>Mais pedidos</h3><p>Os campeões de venda com foto e preço, cada um com link direto para o pedido.</p></div>
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg></i><h3>Cupom por WhatsApp</h3><p>O cliente deixa o número para ganhar o cupom. Você monta uma lista para mandar promoções.</p></div>
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6L2.5 9.3l6.6-.8z"></path></svg></i><h3>Avaliações do Google</h3><p>Nota, depoimentos e o botão “Avalie a gente” na frente de quem vai pedir.</p></div>
+<div class="ft"><i><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 20V11M10 20V5M16 20v-7M21 20H3"></path></svg></i><h3>Dados e relatório</h3><p>Visitas, cliques e horário de pico. Relatório pronto para enviar no WhatsApp.</p></div>
+</div>
+</div></section>
+
+<section class="plans" id="planos"><div class="w">
+<div class="sh"><span class="kick">Planos</span><h2 class="H">Menos que uma pizza por mês.</h2><p>Todos os planos têm tudo liberado. Muda só o período.</p></div>
+<label class="setup"><input type="checkbox" id="kurtz"><div><b>Quero que a Kurtz monte para mim · + R$ 9,90</b><span>Você manda logo, fotos e horário pelo WhatsApp e recebe a página pronta em até 24h.</span></div></label>
+<div class="pg">
+<div class="pc"><h3>Mensal</h3><div class="pr"><b>R$ 29,90</b><small>/mês</small></div><div class="eq"></div><div class="sv">Cancele quando quiser</div><div class="su" data-su></div>
+<ul><li>Página completa, tudo liberado</li><li>Ofertas, cupom e avaliações</li><li>Dados de visitas e cliques</li><li>Suporte no WhatsApp</li></ul>
+<a class="btn or" data-plan="mensal" href="#">Assinar mensal</a></div>
+<div class="pc hi"><span class="badge">Mais escolhido</span><h3>Trimestral</h3><div class="pr"><b>R$ 69,97</b><small>/3 meses</small></div><div class="eq">Equivale a R$ 23,32/mês</div><div class="sv">Economize R$ 19,73</div><div class="su" data-su></div>
+<ul><li>Tudo do mensal</li><li>3 meses para ver os números crescerem</li><li>Relatório mensal pronto</li><li>Suporte no WhatsApp</li></ul>
+<a class="btn or" data-plan="trimestral" href="#">Assinar trimestral</a></div>
+<div class="pc"><h3>Anual</h3><div class="pr"><b>R$ 289,90</b><small>/ano</small></div><div class="eq">Equivale a R$ 24,16/mês</div><div class="sv">Economize R$ 68,90</div><div class="su" data-su></div>
+<ul><li>Tudo do mensal</li><li>12 meses sem se preocupar</li><li>Relatório mensal pronto</li><li>Suporte no WhatsApp</li></ul>
+<a class="btn or" data-plan="anual" href="#">Assinar anual</a></div>
+</div>
+<p class="fine">Pagamento seguro pela Cakto: Pix, cartão ou boleto. Depois do pagamento, você recebe no WhatsApp o código para criar sua página.</p>
+</div></section>
+
+<section id="como"><div class="w">
+<div class="sh"><span class="kick">Como funciona</span><h2 class="H">Do pagamento à bio em minutos.</h2></div>
+<div class="steps">
+<div class="st"><h3>Escolha o plano</h3><p>Pague por Pix ou cartão. Se quiser, marque a montagem pela Kurtz.</p></div>
+<div class="st"><h3>Receba seu código</h3><p>Chega no seu WhatsApp, com o link para criar a página. Se escolheu a montagem, a gente pede suas fotos.</p></div>
+<div class="st"><h3>Coloque na bio</h3><p>Cole o link no Instagram, no QR da mesa e na embalagem. Pronto: acompanhe os cliques na aba Dados.</p></div>
+</div>
+</div></section>
+
+<section style="padding-top:0"><div class="w">
+<div class="sh"><span class="kick">Dúvidas</span><h2 class="H">Perguntas frequentes</h2></div>
+<div class="faq">
+<details><summary>Preciso ter cardápio digital ou iFood?</summary><p>Não. O botão de pedido pode levar para o seu cardápio digital, iFood, WhatsApp ou qualquer link. Se você tem mais de um, coloca todos.</p></details>
+<details><summary>Eu mesmo consigo mudar a promoção e o horário?</summary><p>Sim, pelo celular, a qualquer hora. Você entra em useklinks.com/entrar, muda e publica. Leva menos de um minuto.</p></details>
+<details><summary>Tem fidelidade?</summary><p>Não. Você paga o período escolhido e decide se renova. No trimestral e no anual o valor por mês sai mais barato.</p></details>
+<details><summary>O que é a montagem pela Kurtz?</summary><p>Por R$ 9,90 a mais, a equipe da Assessoria Kurtz monta sua página com suas fotos, textos e links e te entrega pronta em até 24h. Você só coloca na bio.</p></details>
+<details><summary>Posso usar meu próprio endereço?</summary><p>Sua página fica em useklinks.com/nome-do-seu-restaurante. Curto, fácil de falar e de colocar na embalagem.</p></details>
+</div>
+</div></section>
+
+<section class="end"><div class="w">
+<h2 class="H">Seu Instagram traz o cliente. O KLINKS faz ele pedir.</h2>
+<p>Comece hoje a partir de R$ 23,32 por mês.</p>
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn dk" href="#planos">Escolher meu plano</a><a class="btn gh" id="wa" href="#" target="_blank" rel="noopener">Tirar dúvida no WhatsApp</a></div>
+</div></section>
+
+<footer><div class="w"><span>KLINKS · por Assessoria Kurtz</span><span><a href="/entrar">Entrar</a> · <a href="/cadastro">Já tenho código</a></span></div></footer>
+
+<script src="supabase-config.js"></script>
+<script>
+(function () {
+  var C = window.KLINKS_CHECKOUT || {}, WA = String(window.KLINKS_SALES_WHATSAPP || '').replace(/\D/g, '');
+  var NAMES = { mensal: 'Mensal (R$ 29,90)', trimestral: 'Trimestral (R$ 69,97)', anual: 'Anual (R$ 289,90)' };
+  var sc = window.KLINKS_SHOWCASE_SLUG || 'pinerolo';
+  var onDomain = /(^|\.)useklinks\.com$/i.test(location.hostname);
+  var demo = onDomain ? '/' + sc + '?src=lp' : 'pagina.html?r=' + encodeURIComponent(sc);
+  document.getElementById('frame').src = demo; document.getElementById('demo').href = demo;
+  var wa = function (t) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(t); };
+  document.getElementById('wa').href = wa('Oi! Vi a página de planos do KLINKS e tenho uma dúvida.');
+  var kz = document.getElementById('kurtz');
+  function sync() {
+    var on = kz.checked;
+    document.querySelectorAll('[data-su]').forEach(function (el) { el.textContent = on ? '+ R$ 9,90 de montagem (uma vez)' : ''; });
+    document.querySelectorAll('[data-plan]').forEach(function (a) {
+      var p = a.dataset.plan, link = (on && C[p + '_kurtz']) || C[p];
+      if (link) { a.href = link + (link.indexOf('?') < 0 ? '?' : '&') + 'utm_source=lp'; a.target = '_self'; }
+      else { a.href = wa('Oi! Quero assinar o KLINKS no plano ' + NAMES[p] + (on ? ', com a montagem pela Kurtz (+R$ 9,90)' : '') + '.'); a.target = '_blank'; }
+    });
+  }
+  kz.addEventListener('change', sync); sync();
+})();
+</script>
+</body></html>

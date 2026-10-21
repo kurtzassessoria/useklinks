@@ -122,12 +122,20 @@ function AuthScreen({
   const [name, setName] = React.useState('');
   const [slug, setSlug] = React.useState('');
   const [touchedSlug, setTouched] = React.useState(false);
+  const [code, setCode] = React.useState(() => {
+    try {
+      return (new URLSearchParams(location.search).get('codigo') || '').toUpperCase();
+    } catch (e) {
+      return '';
+    }
+  });
+  const [codeOk, setCodeOk] = React.useState(null);
   const [segment, setSegment] = React.useState('pizzaria');
   const [wa, setWa] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [pw, setPw] = React.useState('');
   const [agree, setAgree] = React.useState(true);
-  const [step, setStep] = React.useState(1);
+  const [step, setStep] = React.useState(0);
   const [err, setErr] = React.useState('');
   const [info, setInfo] = React.useState('');
   const [busy, setBusy] = React.useState(false);
@@ -163,6 +171,19 @@ function AuthScreen({
     e.preventDefault();
     setErr('');
     setInfo('');
+    if (step === 0) {
+      if (!code.trim()) return setErr('Digite o código de acesso que você recebeu.');
+      setBusy(true);
+      let pl = null;
+      try {
+        pl = await B.engine.codeCheck(code);
+      } catch (x) {}
+      setBusy(false);
+      if (!pl) return setErr('Código inválido ou já usado. Confira se digitou igual ao que recebeu.');
+      setCodeOk(pl);
+      setStep(1);
+      return;
+    }
     if (step === 1) {
       if (!name.trim()) return setErr('Digite o nome do restaurante.');
       if (check.state !== 'ok') return setErr(check.msg || 'Escolha um endereço disponível.');
@@ -178,7 +199,8 @@ function AuthScreen({
           name,
           slug,
           segment,
-          wa
+          wa,
+          code: code.trim().toUpperCase()
         }));
         setInfo('Enviamos um link de confirmação para ' + email + '. Abra o e-mail, confirme e depois entre aqui — sua página será criada automaticamente.');
         setTab('login');
@@ -190,7 +212,7 @@ function AuthScreen({
         slug,
         segment,
         whatsapp: wa
-      }));
+      }), code.trim().toUpperCase());
       onAuthed();
     } catch (x) {
       setErr(x.message);
@@ -345,23 +367,71 @@ function AuthScreen({
   }, React.createElement("div", {
     className: "st-stepper"
   }, React.createElement("span", {
+    className: step >= 0 ? 'on' : ''
+  }, "1 \xB7 Acesso"), React.createElement("span", {
     className: step >= 1 ? 'on' : ''
-  }, "1 \xB7 Sua p\xE1gina"), React.createElement("span", {
+  }, "2 \xB7 Sua p\xE1gina"), React.createElement("span", {
     className: step >= 2 ? 'on' : ''
-  }, "2 \xB7 Sua conta")), React.createElement("h1", {
+  }, "3 \xB7 Sua conta")), React.createElement("h1", {
     className: "st-h1"
-  }, step === 1 ? 'Crie a página do seu restaurante' : 'Quase lá'), React.createElement("p", {
+  }, step === 0 ? 'Ative seu KLINKS' : step === 1 ? 'Crie a página do seu restaurante' : 'Quase lá'), React.createElement("p", {
     className: "st-lead"
-  }, step === 1 ? 'Pronta em 2 minutos. Um link para a bio do Instagram com delivery, WhatsApp, ofertas e mapa.' : 'Com essa conta você entra para editar sua página de qualquer celular.'), err ? React.createElement("div", {
+  }, step === 0 ? 'Digite o código de acesso que você recebeu no WhatsApp depois da assinatura.' : step === 1 ? 'Pronta em 2 minutos. Um link para a bio do Instagram com delivery, WhatsApp, ofertas e mapa.' : 'Com essa conta você entra para editar sua página de qualquer celular.'), err ? React.createElement("div", {
     className: "st-err"
-  }, err) : null, step === 1 ? React.createElement(React.Fragment, null, React.createElement(SField, {
+  }, err) : null, codeOk && step > 0 ? React.createElement("div", {
+    className: "st-ok",
+    style: {
+      marginBottom: 14
+    }
+  }, "Plano ", codeOk, " ativado com o c\xF3digo ", code.toUpperCase(), ".") : null, step === 0 ? React.createElement(React.Fragment, null, React.createElement(SField, {
+    label: "C\xF3digo de acesso"
+  }, React.createElement(SInput, {
+    value: code,
+    onChange: v => setCode(v.toUpperCase()),
+    placeholder: "KL-XXXX-XXXX",
+    autoFocus: true,
+    autoComplete: "off",
+    style: {
+      letterSpacing: '.08em',
+      fontWeight: 700
+    }
+  })), React.createElement("button", {
+    className: "st-btn pri full",
+    disabled: busy
+  }, busy ? 'Conferindo…' : 'Continuar'), React.createElement("div", {
+    className: "st-card",
+    style: {
+      marginTop: 16,
+      display: 'flex',
+      gap: 12,
+      alignItems: 'center',
+      flexWrap: 'wrap'
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 180,
+      fontSize: 14
+    }
+  }, React.createElement("b", null, "Ainda n\xE3o assinou?"), React.createElement("div", {
+    style: {
+      color: 'var(--s-mut)',
+      fontSize: 13,
+      marginTop: 2
+    }
+  }, "Planos a partir de R$ 23,32/m\xEAs.")), React.createElement("a", {
+    className: "st-btn sm",
+    style: {
+      textDecoration: 'none'
+    },
+    href: "/planos"
+  }, "Ver planos"))) : step === 1 ? React.createElement(React.Fragment, null, React.createElement(SField, {
     label: "Nome do restaurante"
   }, React.createElement(SInput, {
     value: name,
     onChange: setName,
     placeholder: "Ex.: Pinerolo Pizzaria",
-    maxLength: 40,
-    autoFocus: true
+    maxLength: 40
   })), React.createElement(SlugField, {
     slug: slug,
     setSlug: v => {
@@ -452,6 +522,7 @@ function CreatePage({
   const [slug, setSlug] = React.useState(pend.slug || '');
   const [segment, setSegment] = React.useState(pend.segment || 'pizzaria');
   const [wa, setWa] = React.useState(pend.wa || '');
+  const [code, setCode] = React.useState(pend.code || '');
   const [err, setErr] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const check = useSlugCheck(slug);
@@ -485,13 +556,14 @@ function CreatePage({
     if (!name.trim()) return setErr('Digite o nome do restaurante.');
     if (check.state !== 'ok') return setErr(check.msg || 'Escolha um endereço disponível.');
     setBusy(true);
+    if (!code.trim()) return setErr('Digite o código de acesso que você recebeu.');
     try {
       await B.engine.createRestaurant(slug, K.buildConfig({
         name: name.trim(),
         slug,
         segment,
         whatsapp: wa
-      }));
+      }), code.trim().toUpperCase());
       localStorage.removeItem('klinks_pending');
       onCreated();
     } catch (x) {
@@ -511,6 +583,16 @@ function CreatePage({
   }, "Conta: ", React.createElement("b", null, user.email)), err ? React.createElement("div", {
     className: "st-err"
   }, err) : null, React.createElement(SField, {
+    label: "C\xF3digo de acesso",
+    hint: React.createElement("span", null, "Recebido no WhatsApp ap\xF3s a assinatura. N\xE3o tem? ", React.createElement("a", {
+      href: "/planos"
+    }, "Ver planos"))
+  }, React.createElement(SInput, {
+    value: code,
+    onChange: v => setCode(v.toUpperCase()),
+    placeholder: "KL-XXXX-XXXX",
+    autoComplete: "off"
+  })), React.createElement(SField, {
     label: "Nome do restaurante"
   }, React.createElement(SInput, {
     value: name,
