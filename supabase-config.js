@@ -32,13 +32,13 @@ window.KLINKS_PUBLIC_BASE       = 'https://useklinks.com';
 /* Link do checkout do Pro (Cakto). */
 window.KLINKS_UPGRADE_URL       = '';
 /* WhatsApp comercial da Kurtz (só números, com 55). Usado se não houver checkout. */
-window.KLINKS_SALES_WHATSAPP    = '';
+window.KLINKS_SALES_WHATSAPP    = '5547984401012';
 /* Links de checkout da Cakto, um por plano (página /planos).
    Sem link, o botão abre o WhatsApp comercial com o plano escolhido. */
 window.KLINKS_CHECKOUT = {
-  mensal:     '',
-  trimestral: '',
-  anual:      '',
+  mensal:     'https://pay.cakto.com.br/3a43eoe_945442',
+  trimestral: 'https://pay.cakto.com.br/jkf3ec3',
+  anual:      'https://pay.cakto.com.br/byx77s4',
 };
 /* Página real mostrada como exemplo na tela de cadastro (precisa estar publicada). */
-window.KLINKS_SHOWCASE_SLUG     = 'pinerolo';
+window.KLINKS_SHOWCASE_SLUG     = 'burguer-haus';

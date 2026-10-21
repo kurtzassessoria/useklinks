@@ -419,7 +419,7 @@ function AuthScreen({
       fontSize: 13,
       marginTop: 2
     }
-  }, "Planos a partir de R$ 23,32/m\xEAs.")), React.createElement("a", {
+  }, "Planos a partir de R$ 16,88/m\xEAs.")), React.createElement("a", {
     className: "st-btn sm",
     style: {
       textDecoration: 'none'

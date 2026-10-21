@@ -280,9 +280,9 @@ function AdminNewClient({
   }, busy ? 'Criando…' : 'Criar e começar a editar'));
 }
 const PLAN_LBL = {
-  mensal: 'Mensal · R$ 29,90',
-  trimestral: 'Trimestral · R$ 69,97',
-  anual: 'Anual · R$ 289,90'
+  mensal: 'Mensal · R$ 34,90',
+  trimestral: 'Trimestral · R$ 69,90',
+  anual: 'Anual · R$ 202,60'
 };
 function AdminCodes() {
   const B = window.KlinksBackend;

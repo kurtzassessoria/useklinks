@@ -219,7 +219,7 @@ function BioPage({
       const tile = b.icon === 'logo' && p.logo ? React.createElement("span", {
         className: "bp-tile",
         style: {
-          backgroundImage: `url(${p.logo})`
+          background: `center/cover no-repeat url("${p.logo}")`
         }
       }) : React.createElement("span", {
         className: "bp-tile",
