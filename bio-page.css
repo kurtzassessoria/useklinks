@@ -91,7 +91,6 @@
 .bp-rev cite{display:block;font-style:normal;font-weight:700;font-size:12px;opacity:.65;margin-top:6px}
 .bp-desk-bg,.bp-desk-qr{display:none}
 @media (min-width:760px) and (min-height:560px){
-  body{overflow:hidden}
   .bp-desk{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:40px;padding:28px}
   .bp-desk-bg{display:block;position:absolute;inset:-40px;background:center/cover;filter:blur(36px) brightness(.45) saturate(1.2);transform:scale(1.08)}
   .bp-desk-phone{position:relative;width:410px;height:min(860px,calc(100vh - 56px));border-radius:46px;overflow:hidden auto;background:var(--bp-bg,#111);border:10px solid #0b0b0c;box-shadow:0 0 0 1px #ffffff1a,0 40px 100px #000a;scrollbar-width:none}

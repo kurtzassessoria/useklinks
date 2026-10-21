@@ -23,7 +23,7 @@ small{display:block;margin-top:22px;color:#8a8a8a;font-size:13px}
 <p id="sub">Bem-vindo ao KLINKS. Agora escolha como quer criar sua página:</p>
 <div class="opts">
 <a class="o hi" id="self" href="#" target="_blank" rel="noopener"><div><b>Eu mesmo monto</b><span>Receba seu código de acesso no WhatsApp e crie a página em 2 minutos.</span></div><i>→</i></a>
-<a class="o" id="kurtz" href="#" target="_blank" rel="noopener"><div><b>Quero que a Kurtz monte</b><span>Mande suas fotos e informações e receba pronta em até 24h.</span></div><i>→</i></a>
+<a class="o" id="kurtz" href="#" target="_blank" rel="noopener"><div><b>Quero que a Kurtz monte</b><span>Marcou a montagem (R$ 9,90) no pagamento? Mande suas fotos e receba a página pronta em até 24h.</span></div><i>→</i></a>
 </div>
 <small>Já recebeu o código? <a href="/cadastro">Criar minha página</a></small>
 </div>
@@ -36,6 +36,7 @@ var w = function (t) { return 'https://wa.me/' + WA + '?text=' + encodeURICompon
 if (N) document.getElementById('sub').textContent = 'Plano ' + N + ' ativado. Agora escolha como quer criar sua página:';
 var base = 'Oi! Acabei de assinar o KLINKS' + (N ? ' (plano ' + N + ')' : '') + '.';
 document.getElementById('self').href = w(base + ' Pode me mandar meu código de acesso? Nome do restaurante: ');
-document.getElementById('kurtz').href = w(base + ' Quero que a Kurtz monte minha página. Nome do restaurante: ');
+document.getElementById('kurtz').href = w(base + ' Marquei a montagem Kurtz (R$ 9,90) no pagamento. E-mail usado na compra: ___ · Nome do restaurante: ___');
+document.getElementById('self').href = w(base + ' Pode me mandar meu código de acesso? E-mail usado na compra: ___ · Nome do restaurante: ___');
 </script>
 </body></html>
